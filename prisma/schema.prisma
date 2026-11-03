@@ -1,0 +1,63 @@
+// ==============================================================================
+// NEXO FINANCE - PRISMA SCHEMA (PostgreSQL / Supabase)
+// Responsável: @AgenteBackend (Skill BKE-001)
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionStatus {
+  DRAFT
+  COMPLETED
+}
+
+enum TransactionSource {
+  MANUAL
+  AI_OCR
+}
+
+model Category {
+  id           String          @id @default(uuid()) @db.Uuid
+  userId       String?         @map("user_id") @db.Uuid
+  name         String
+  type         TransactionType
+  color        String          @default("#7c3aed")
+  icon         String          @default("Tag")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("categories")
+}
+
+model Transaction {
+  id              String            @id @default(uuid()) @db.Uuid
+  userId          String            @map("user_id") @db.Uuid
+  categoryId      String?           @map("category_id") @db.Uuid
+  category        Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  description     String
+  amount          Decimal           @db.Decimal(12, 2)
+  type            TransactionType
+  status          TransactionStatus @default(COMPLETED)
+  transactionDate DateTime          @default(now()) @map("transaction_date") @db.Date
+  attachmentUrl   String?           @map("attachment_url")
+  source          TransactionSource @default(MANUAL)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([userId, transactionDate(sort: Desc)], map: "idx_transactions_user_date")
+  @@index([status], map: "idx_transactions_status")
+  @@map("transactions")
+}
