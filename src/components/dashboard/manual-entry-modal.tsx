@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import {
+  ArrowDownRight,
+  ArrowUpRight,
   Calendar,
   DollarSign,
   FileText,
@@ -77,7 +79,11 @@ export function ManualEntryModal({
       } = {};
       for (const issue of validation.error.issues) {
         const key = issue.path[0];
-        if (key === "description" || key === "amount" || key === "transactionDate") {
+        if (
+          key === "description" ||
+          key === "amount" ||
+          key === "transactionDate"
+        ) {
           nextErrors[key] = issue.message;
         }
       }
@@ -95,10 +101,16 @@ export function ManualEntryModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="manual-entry-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#09090B]/50 p-4 backdrop-blur-xs"
     >
-      <Card className="w-full max-w-lg border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 border-b border-slate-100 pb-4 dark:border-zinc-800">
+      <Card className="w-full max-w-lg overflow-hidden border-[#E4E4E7] bg-[#FFFFFF] dark:border-[#3F3F46] dark:bg-[#18181B]">
+        <div
+          className="h-1.5 w-full"
+          style={{
+            background: "linear-gradient(90deg, #DC2626 0%, #692296 100%)",
+          }}
+        />
+        <CardHeader className="flex flex-row items-start justify-between space-y-0 border-b border-[#E4E4E7] pb-4 dark:border-[#3F3F46]">
           <div>
             <CardTitle id="manual-entry-title" className="text-base">
               Novo Lançamento Manual
@@ -109,21 +121,23 @@ export function ManualEntryModal({
           </div>
           <Button
             type="button"
-            size="icon"
+            size="sm"
             variant="ghost"
+            icon={X}
             aria-label="Fechar modal de lançamento manual"
             onClick={onClose}
           >
-            <X className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+            Fechar
           </Button>
         </CardHeader>
 
         <CardContent className="pt-5">
           <form onSubmit={handleFormSubmit} className="space-y-4" noValidate>
-            {/* Seletor rápido de Tipo */}
+            {/* Seletor rápido de Tipo (Ícone Lucide + Texto em linha única) */}
             <div className="grid grid-cols-2 gap-3">
               <Button
                 type="button"
+                icon={ArrowDownRight}
                 variant={type === "EXPENSE" ? "expense" : "neutral"}
                 onClick={() => setType("EXPENSE")}
                 data-testid="manual-type-expense"
@@ -132,6 +146,7 @@ export function ManualEntryModal({
               </Button>
               <Button
                 type="button"
+                icon={ArrowUpRight}
                 variant={type === "INCOME" ? "income" : "neutral"}
                 onClick={() => setType("INCOME")}
                 data-testid="manual-type-income"
@@ -180,7 +195,7 @@ export function ManualEntryModal({
             <div>
               <label
                 htmlFor="manual-category-select"
-                className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300"
+                className="mb-1.5 block text-xs font-medium text-[#3F3F46] dark:text-[#D4D4D8]"
               >
                 Categoria
               </label>
@@ -189,7 +204,7 @@ export function ManualEntryModal({
                 value={category}
                 data-testid="manual-category-select"
                 onChange={(e) => setCategory(e.target.value as CategoryName)}
-                className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:border-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                className="flex h-10 w-full rounded-lg border border-[#E4E4E7] bg-[#FFFFFF] px-3 py-2 text-sm text-[#18181B] focus-visible:border-[#DC2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FACBC2]/70 dark:border-[#3F3F46] dark:bg-[#18181B] dark:text-[#F4F4F5]"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -200,7 +215,12 @@ export function ManualEntryModal({
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <Button type="button" variant="neutral" onClick={onClose}>
+              <Button
+                type="button"
+                variant="neutral"
+                icon={X}
+                onClick={onClose}
+              >
                 Cancelar
               </Button>
               <Button

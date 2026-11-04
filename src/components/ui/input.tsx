@@ -36,7 +36,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label ? (
           <label
             htmlFor={inputId}
-            className="block text-xs font-medium text-slate-700 dark:text-zinc-300"
+            className="block text-xs font-medium text-[#3F3F46] dark:text-[#D4D4D8]"
           >
             {label}
           </label>
@@ -48,8 +48,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               className={cn(
                 "pointer-events-none absolute left-3 h-4 w-4 shrink-0 transition-colors",
                 error
-                  ? "text-red-500"
-                  : "text-slate-400 dark:text-zinc-500"
+                  ? "text-[#DF2929]"
+                  : "text-[#71717A] dark:text-[#D4D4D8]"
               )}
               strokeWidth={1.5}
               aria-hidden="true"
@@ -65,13 +65,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               error ? errorId : helperText ? helperId : undefined
             }
             className={cn(
-              "flex h-10 w-full rounded-lg border border-solid bg-white px-3 py-2 text-sm text-slate-900 shadow-2xs transition-all placeholder:text-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500",
+              "flex h-10 w-full rounded-lg border border-solid bg-[#FFFFFF] px-3 py-2 text-sm text-[#18181B] transition-all duration-150 placeholder:text-[#71717A] hover:border-[#D4D4D8] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#18181B] dark:text-[#F4F4F5] dark:placeholder:text-[#71717A] dark:hover:border-[#71717A]",
               Icon && "pl-9",
               error && "pr-9",
               tabularNums && "tabular-nums",
               error
-                ? "border-red-500 focus-visible:border-red-600 focus-visible:ring-2 focus-visible:ring-red-500/20 dark:border-red-500"
-                : "border-slate-200 focus-visible:border-rose-500 focus-visible:ring-2 focus-visible:ring-rose-500/20 dark:border-zinc-800 dark:focus-visible:border-rose-500",
+                ? "border-[#DF2929] focus-visible:border-[#DF2929] focus-visible:ring-2 focus-visible:ring-[#F9C5BD] dark:border-[#E54541]"
+                : "border-[#E4E4E7] focus-visible:border-[#DC2626] focus-visible:ring-2 focus-visible:ring-[#FACBC2]/70 dark:border-[#3F3F46] dark:focus-visible:border-[#E85950]",
               className
             )}
             {...props}
@@ -79,7 +79,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
           {error ? (
             <AlertCircle
-              className="pointer-events-none absolute right-3 h-4 w-4 shrink-0 text-red-500"
+              className="pointer-events-none absolute right-3 h-4 w-4 shrink-0 text-[#DF2929]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
@@ -90,14 +90,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <p
             id={errorId}
             role="alert"
-            className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"
+            className="flex items-center gap-1.5 text-xs font-medium text-[#DF2929] dark:text-[#F4948C]"
           >
             <span>{error}</span>
           </p>
         ) : helperText ? (
           <p
             id={helperId}
-            className="text-xs text-slate-500 dark:text-zinc-400"
+            className="text-xs text-[#71717A] dark:text-[#D4D4D8]"
           >
             {helperText}
           </p>

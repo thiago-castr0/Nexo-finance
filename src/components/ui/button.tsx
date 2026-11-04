@@ -3,32 +3,37 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Regra Estrita de UI:
+ * - NUNCA quebrar em duas linhas (`flex-row flex-nowrap whitespace-nowrap shrink-0`)
+ * - Sempre manter Ícone Lucide + Texto lado a lado na mesma linha horizontal
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 bg-transparent border border-solid cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.99]",
+  "inline-flex flex-row flex-nowrap items-center justify-center gap-2 whitespace-nowrap shrink-0 text-sm font-medium leading-none transition-all duration-200 bg-transparent border border-solid cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] hover:-translate-y-[1px] [&_svg]:shrink-0 [&_svg]:inline-block",
   {
     variants: {
       variant: {
         primary:
-          "border-rose-600 text-rose-600 hover:bg-rose-50/80 focus-visible:ring-rose-500/40 dark:border-rose-500 dark:text-rose-400 dark:hover:bg-rose-950/40",
+          "border-[#DC2626] text-[#DC2626] hover:bg-[#FACBC2]/40 hover:shadow-[0_4px_14px_-4px_rgba(220,38,38,0.28)] focus-visible:ring-[#EE7870] dark:border-[#E85950] dark:text-[#F59B92] dark:hover:bg-[#DC2626]/20",
         secondary:
-          "border-violet-600 text-violet-600 hover:bg-violet-50/80 focus-visible:ring-violet-500/40 dark:border-violet-500 dark:text-violet-400 dark:hover:bg-violet-950/40",
+          "border-[#692296] text-[#692296] hover:bg-[#DEC5EF]/45 hover:shadow-[0_4px_14px_-4px_rgba(105,34,150,0.28)] focus-visible:ring-[#A466D1] dark:border-[#A466D1] dark:text-[#C59BE3] dark:hover:bg-[#692296]/25",
         income:
-          "border-emerald-600 text-emerald-700 hover:bg-emerald-50/80 focus-visible:ring-emerald-500/40 dark:border-emerald-500 dark:text-emerald-400 dark:hover:bg-emerald-950/40",
+          "border-[#0CB853] text-[#0CB853] hover:bg-[#BCE5CB]/45 hover:shadow-[0_4px_14px_-4px_rgba(12,184,83,0.25)] focus-visible:ring-[#46C87D] dark:border-[#46C87D] dark:text-[#7BD6A0] dark:hover:bg-[#0CB853]/20",
         expense:
-          "border-red-600 text-red-600 hover:bg-red-50/80 focus-visible:ring-red-500/40 dark:border-red-500 dark:text-red-400 dark:hover:bg-red-950/40",
+          "border-[#DF2929] text-[#DF2929] hover:bg-[#F9C5BD]/45 hover:shadow-[0_4px_14px_-4px_rgba(223,41,41,0.25)] focus-visible:ring-[#EC6862] dark:border-[#E54541] dark:text-[#F4948C] dark:hover:bg-[#DF2929]/20",
         warning:
-          "border-amber-600 text-amber-700 hover:bg-amber-50/80 focus-visible:ring-amber-500/40 dark:border-amber-500 dark:text-amber-400 dark:hover:bg-amber-950/40",
+          "border-[#EA920F] text-[#EA920F] hover:bg-[#EDE08D]/50 hover:shadow-[0_4px_14px_-4px_rgba(234,146,15,0.25)] focus-visible:ring-[#ECC023] dark:border-[#EDAD12] dark:text-[#ECD54A] dark:hover:bg-[#EA920F]/20",
         info:
-          "border-blue-600 text-blue-600 hover:bg-blue-50/80 focus-visible:ring-blue-500/40 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40",
+          "border-[#2572CE] text-[#2572CE] hover:bg-[#BCD6F2]/45 hover:shadow-[0_4px_14px_-4px_rgba(37,114,206,0.25)] focus-visible:ring-[#65A2E6] dark:border-[#65A2E6] dark:text-[#8CB9EB] dark:hover:bg-[#2572CE]/20",
         neutral:
-          "border-slate-300 text-slate-700 hover:bg-slate-100/70 focus-visible:ring-slate-400/40 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800/50",
+          "border-[#D4D4D8] text-[#3F3F46] hover:border-[#71717A] hover:bg-[#F4F4F5] focus-visible:ring-[#71717A]/30 dark:border-[#3F3F46] dark:text-[#D4D4D8] dark:hover:border-[#71717A] dark:hover:bg-[#3F3F46]/40",
         ghost:
-          "border-transparent text-slate-600 hover:bg-slate-100/70 hover:text-slate-900 focus-visible:ring-slate-400/40 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100",
+          "border-transparent text-[#71717A] hover:bg-[#F4F4F5] hover:text-[#18181B] focus-visible:ring-[#D4D4D8] dark:text-[#D4D4D8] dark:hover:bg-[#3F3F46]/40 dark:hover:text-white",
       },
       size: {
-        sm: "h-8 px-3 text-xs",
-        md: "h-10 px-4 py-2 text-sm",
-        lg: "h-11 px-5 text-base",
+        sm: "h-9 px-3.5 text-xs",
+        md: "h-10 px-4 text-sm",
+        lg: "h-11 px-5 text-sm",
         icon: "h-9 w-9 p-0",
       },
       shape: {
@@ -72,7 +77,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn(buttonVariants({ variant, size, shape, className }))}
+        className={cn(
+          buttonVariants({ variant, size, shape, className }),
+          isLoading && "[&>svg:not(.animate-spin)]:hidden"
+        )}
         {...props}
       >
         {isLoading ? (
@@ -88,7 +96,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             aria-hidden="true"
           />
         ) : null}
-        {isLoading && loadingText ? loadingText : children}
+        {isLoading && loadingText ? (
+          <span className="inline-flex flex-row flex-nowrap items-center gap-2 whitespace-nowrap">
+            {loadingText}
+          </span>
+        ) : (
+          children
+        )}
       </button>
     );
   }

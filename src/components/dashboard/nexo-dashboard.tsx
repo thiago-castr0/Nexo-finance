@@ -1,15 +1,23 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
+  BarChart3,
+  Calendar,
   CheckCircle2,
+  Cpu,
   Flame,
+  LayoutGrid,
+  Palette,
   PlusCircle,
   ShieldCheck,
-  Sparkles,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeSwitch } from "@/components/ui/switch";
+import { SegmentedTabs } from "@/components/ui/tabs";
 import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { FinanceCharts } from "@/components/dashboard/finance-charts";
 import { SmartInputDropzone } from "@/components/dashboard/smart-input-dropzone";
@@ -29,7 +37,7 @@ import type {
 const INITIAL_DEMO_TRANSACTIONS: TransactionRecord[] = [
   {
     id: "tx-initial-1",
-    description: "Salário Mensal - Tecnologia",
+    description: "Salário Mensal — Engenharia & Produto (2TP)",
     amount: 8500.0,
     type: "INCOME",
     category: "Salário & Renda",
@@ -62,7 +70,7 @@ const INITIAL_DEMO_TRANSACTIONS: TransactionRecord[] = [
   },
   {
     id: "tx-initial-4",
-    description: "Assinaturas Cloud & IA",
+    description: "Assinaturas Cloud & Infraestrutura IA",
     amount: 149.9,
     type: "EXPENSE",
     category: "Assinaturas & Software",
@@ -73,7 +81,11 @@ const INITIAL_DEMO_TRANSACTIONS: TransactionRecord[] = [
   },
 ];
 
+type WorkspaceView = "ALL" | "ANALYTICS";
+
 export function NexoDashboard() {
+  const [darkMode, setDarkMode] = React.useState(false);
+  const [activeView, setActiveView] = React.useState<WorkspaceView>("ALL");
   const [transactions, setTransactions] = React.useState<TransactionRecord[]>(
     INITIAL_DEMO_TRANSACTIONS
   );
@@ -119,7 +131,7 @@ export function NexoDashboard() {
         setDraftItems(null);
         setDraftFileName("");
         setFeedbackBanner(
-          `${response.data.length} lançamentos do rascunho foram aprovados e adicionados ao seu saldo!`
+          `${response.data.length} lançamentos do rascunho foram aprovados e integrados ao seu saldo!`
         );
       }
     });
@@ -138,7 +150,6 @@ export function NexoDashboard() {
     });
   };
 
-  // Atualização Otimista ao remover uma transação (Skill FTE-002)
   const handleDeleteTransaction = (id: string) => {
     setTransactions((prev) => prev.filter((item) => item.id !== id));
   };
@@ -151,129 +162,201 @@ export function NexoDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 dark:bg-zinc-950">
-      {/* Cabeçalho Minimalista (1px solid border, Brand Red/Purple) */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/90">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 bg-rose-50/80 text-rose-600 dark:border-rose-900 dark:bg-rose-950/60 dark:text-rose-400">
-              <Flame className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-zinc-50">
-                  Nexo Finance
-                </h1>
-                <Badge variant="brand">MVP Beta</Badge>
+    <div className={darkMode ? "dark" : ""}>
+      <div className="min-h-screen bg-[#F4F4F5] text-[#18181B] transition-colors dark:bg-[#09090B] dark:text-[#F4F4F5]">
+        {/* BARRA DE COMANDO PANORÂMICA (Sem menu lateral pesado e sem botões repetidos) */}
+        <header className="sticky top-0 z-30 border-b border-[#E4E4E7] bg-[#FFFFFF]/90 backdrop-blur-xl dark:border-[#3F3F46] dark:bg-[#18181B]/90">
+          <div className="mx-auto flex max-w-[1520px] flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-8">
+            {/* Esquerda: Identidade Nexo Finance + Ecossistema 2TP Soluções em Tecnologia */}
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#F59B92] bg-gradient-to-br from-[#FACBC2]/70 to-[#DEC5EF]/70 text-[#DC2626] shadow-2xs dark:border-[#DC2626] dark:from-[#DC2626]/25 dark:to-[#692296]/25 dark:text-[#FACBC2]">
+                <Flame
+                  className="h-5 w-5"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
               </div>
-              <p className="text-xs text-slate-500 dark:text-zinc-400">
-                Controle financeiro inteligente com OCR e revisão assistida
-              </p>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="whitespace-nowrap text-base font-bold tracking-tight text-[#18181B] dark:text-[#FFFFFF]">
+                    Nexo Finance
+                  </h1>
+                  <Badge variant="brand" icon={Cpu}>
+                    2TP Soluções em Tecnologia
+                  </Badge>
+                </div>
+                <p className="text-xs text-[#71717A] dark:text-[#D4D4D8]">
+                  Ecossistema Nexo • Inteligência Contábil & Automação OCR
+                </p>
+              </div>
+            </div>
+
+            {/* Centro: Navegação Segmentada em Pílula (Ícone Lucide + Texto em linha única) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <SegmentedTabs
+                value={activeView}
+                onChange={setActiveView}
+                options={[
+                  {
+                    id: "ALL",
+                    label: "Visão Completa",
+                    icon: LayoutGrid,
+                  },
+                  {
+                    id: "ANALYTICS",
+                    label: "Foco em Gráficos",
+                    icon: BarChart3,
+                  },
+                ]}
+              />
+
+              <Link href="/design-system">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  icon={Palette}
+                >
+                  Design System Studio
+                </Button>
+              </Link>
+            </div>
+
+            {/* Direita: Ciclo Contábil + Switch Dark/Light Mode + CTA Único de Lançamento */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Badge
+                variant="neutral"
+                icon={Calendar}
+                className="hidden py-1.5 xl:inline-flex"
+              >
+                Novembro 2026
+              </Badge>
+
+              <ThemeSwitch darkMode={darkMode} onToggle={setDarkMode} />
+
+              <Button
+                type="button"
+                size="sm"
+                variant="primary"
+                icon={PlusCircle}
+                onClick={() => setIsManualModalOpen(true)}
+              >
+                Novo Lançamento
+              </Button>
             </div>
           </div>
+        </header>
 
-          <nav
-            aria-label="Ações rápidas"
-            className="flex flex-wrap items-center gap-2.5"
-          >
-            <Badge variant="purple" icon={ShieldCheck}>
-              Zero Trust & RLS
-            </Badge>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              icon={Sparkles}
-              onClick={handleFocusSmartInput}
+        {/* WORKSPACE PANORÂMICO EM BENTO GRID (Aproveitamento máximo da tela) */}
+        <main className="mx-auto w-full max-w-[1520px] space-y-6 px-4 py-6 sm:px-8">
+          {feedbackBanner ? (
+            <div
+              role="status"
+              aria-live="polite"
+              data-testid="feedback-banner"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#7BD6A0] bg-[#BCE5CB]/45 px-4 py-3 text-xs font-medium text-[#18181B] dark:border-[#13BD5B] dark:bg-[#0CB853]/20 dark:text-[#BCE5CB]"
             >
-              Importar Extrato (IA)
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="primary"
-              icon={PlusCircle}
-              onClick={() => setIsManualModalOpen(true)}
-            >
-              Novo Lançamento
-            </Button>
-          </nav>
-        </div>
-      </header>
+              <div className="flex items-center gap-2">
+                <CheckCircle2
+                  className="h-4 w-4 shrink-0 text-[#0CB853]"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                <span>{feedbackBanner}</span>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                icon={X}
+                onClick={() => setFeedbackBanner(null)}
+              >
+                Fechar Aviso
+              </Button>
+            </div>
+          ) : null}
 
-      {/* Conteúdo Principal */}
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
-        {feedbackBanner ? (
-          <div
-            role="status"
-            data-testid="feedback-banner"
-            className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-xs font-medium text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
-          >
+          {/* LINHA 1 DO BENTO GRID: Balanço Patrimonial (8 Colunas) + Copiloto Smart Input IA (4 Colunas) */}
+          {activeView === "ALL" ? (
+            <div className="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-12">
+              <div className="xl:col-span-8">
+                <SummaryCards
+                  summary={summary}
+                  pendingDraftCount={draftItems?.length ?? 0}
+                />
+              </div>
+              <div className="xl:col-span-4">
+                <SmartInputDropzone
+                  onDraftExtracted={handleDraftExtracted}
+                  onOpenManualFallback={() => setIsManualModalOpen(true)}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {/* LINHA 2: Tela de Rascunho Assistida por IA (Quando Ativa) */}
+          {draftItems ? (
+            <DraftReviewPanel
+              key={draftFileName || "draft"}
+              initialItems={draftItems}
+              sourceFileName={draftFileName}
+              extractionMode={draftMode}
+              isApproving={isApprovingDraft}
+              onApproveAll={handleApproveDraft}
+              onDiscardDraft={() => {
+                setDraftItems(null);
+                setDraftFileName("");
+              }}
+            />
+          ) : null}
+
+          {/* LINHA 3: Gráficos Analíticos Consolidados */}
+          <FinanceCharts transactions={transactions} />
+
+          {/* LINHA 4: Livro-Razão Interativo com Filtros Instantâneos */}
+          {activeView === "ALL" ? (
+            <TransactionsTable
+              transactions={transactions}
+              onDeleteTransaction={handleDeleteTransaction}
+              onOpenManualEntry={() => setIsManualModalOpen(true)}
+              onTriggerUpload={handleFocusSmartInput}
+            />
+          ) : null}
+        </main>
+
+        {/* Rodapé de Assinatura 2TP Soluções em Tecnologia */}
+        <footer className="mt-10 border-t border-[#E4E4E7] bg-[#FFFFFF]/80 py-4 dark:border-[#3F3F46] dark:bg-[#18181B]/80">
+          <div className="mx-auto flex max-w-[1520px] flex-wrap items-center justify-between gap-3 px-4 text-xs text-[#71717A] sm:px-8 dark:text-[#D4D4D8]">
             <div className="flex items-center gap-2">
-              <CheckCircle2
-                className="h-4 w-4 shrink-0 text-emerald-600"
+              <Flame
+                className="h-3.5 w-3.5 text-[#DC2626]"
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <span>{feedbackBanner}</span>
+              <span>
+                <strong>Nexo Finance</strong> • Desenvolvido sob o padrão visual{" "}
+                <strong>2TP Soluções em Tecnologia</strong>
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={() => setFeedbackBanner(null)}
-              className="text-xs underline hover:text-emerald-950"
-            >
-              Fechar
-            </button>
+            <div className="flex items-center gap-3">
+              <Badge variant="purple" icon={ShieldCheck}>
+                Zero Trust & RLS
+              </Badge>
+              <span className="font-mono text-[11px]">
+                Next.js App Router • Supabase • Gemini OCR
+              </span>
+            </div>
           </div>
-        ) : null}
+        </footer>
 
-        {/* 1. Cards de Resumo (Saldo Total, Receitas, Despesas com tabular-nums) */}
-        <SummaryCards
-          summary={summary}
-          pendingDraftCount={draftItems?.length ?? 0}
+        {/* Modal de Lançamento Manual (Keyboard-First) */}
+        <ManualEntryModal
+          isOpen={isManualModalOpen}
+          isSubmitting={isSubmittingManual}
+          onClose={() => setIsManualModalOpen(false)}
+          onSubmit={handleManualSubmit}
         />
-
-        {/* 2. Zona de Smart Input (Upload de PDF / Prints com IA) */}
-        <SmartInputDropzone
-          onDraftExtracted={handleDraftExtracted}
-          onOpenManualFallback={() => setIsManualModalOpen(true)}
-        />
-
-        {/* 3. Tela de Rascunho (Draft Review) — Visível quando a IA extrai lançamentos */}
-        {draftItems ? (
-          <DraftReviewPanel
-            key={draftFileName || "draft"}
-            initialItems={draftItems}
-            sourceFileName={draftFileName}
-            extractionMode={draftMode}
-            isApproving={isApprovingDraft}
-            onApproveAll={handleApproveDraft}
-            onDiscardDraft={() => {
-              setDraftItems(null);
-              setDraftFileName("");
-            }}
-          />
-        ) : null}
-
-        {/* 4. Gráficos Financeiros (Recharts) */}
-        <FinanceCharts transactions={transactions} />
-
-        {/* 5. Tabela de Transações (ou Zero State se vazia) */}
-        <TransactionsTable
-          transactions={transactions}
-          onDeleteTransaction={handleDeleteTransaction}
-          onOpenManualEntry={() => setIsManualModalOpen(true)}
-          onTriggerUpload={handleFocusSmartInput}
-        />
-      </main>
-
-      {/* Modal de Lançamento Manual (Keyboard-First) */}
-      <ManualEntryModal
-        isOpen={isManualModalOpen}
-        isSubmitting={isSubmittingManual}
-        onClose={() => setIsManualModalOpen(false)}
-        onSubmit={handleManualSubmit}
-      />
+      </div>
     </div>
   );
 }

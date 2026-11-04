@@ -73,17 +73,23 @@ export function DraftReviewPanel({
   return (
     <Card
       data-testid="draft-review-panel"
-      className="border-violet-300 bg-white dark:border-violet-900/70 dark:bg-zinc-900"
+      className="overflow-hidden border-[#A466D1] bg-[#FFFFFF] dark:border-[#7E32B5] dark:bg-[#18181B]"
     >
-      <CardHeader className="border-b border-slate-100 pb-4 dark:border-zinc-800">
+      <div
+        className="h-1.5 w-full"
+        style={{
+          background: "linear-gradient(90deg, #692296 0%, #DC2626 100%)",
+        }}
+      />
+      <CardHeader className="border-b border-[#E4E4E7] pb-4 dark:border-[#3F3F46]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant="purple" icon={Sparkles}>
                 Modo Rascunho (Draft)
               </Badge>
-              <span className="text-xs text-slate-500 dark:text-zinc-400">
-                Arquivo: <strong>{sourceFileName}</strong>
+              <span className="text-xs text-[#71717A] dark:text-[#D4D4D8]">
+                Documento: <strong>{sourceFileName}</strong>
               </span>
               {extractionMode === "SMART_SIMULATION" ? (
                 <Badge variant="info">Simulação Contextual Local</Badge>
@@ -93,12 +99,12 @@ export function DraftReviewPanel({
               Comprovante Lido com Sucesso — Revise antes de aprovar
             </CardTitle>
             <CardDescription>
-              Confira ou altere descrições, categorias sugeridas pela IA e
-              valores. Nenhum lançamento altera seu saldo até sua aprovação.
+              Edite descrições, categorias sugeridas pela IA ou valores. Nenhum
+              lançamento altera seu saldo até sua aprovação.
             </CardDescription>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               size="sm"
@@ -125,7 +131,7 @@ export function DraftReviewPanel({
       <CardContent className="space-y-4 pt-5">
         {items.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[#71717A]">
               Todos os itens do rascunho foram removidos.
             </p>
             <Button
@@ -136,7 +142,7 @@ export function DraftReviewPanel({
               className="mt-3"
               onClick={handleResetToOriginal}
             >
-              Restaurar itens extraídos
+              Restaurar Itens Extraídos
             </Button>
           </div>
         ) : (
@@ -145,7 +151,7 @@ export function DraftReviewPanel({
               <div
                 key={`draft-row-${idx}`}
                 data-testid={`draft-row-${idx}`}
-                className="grid grid-cols-1 items-end gap-3 rounded-xl border border-slate-200/80 bg-slate-50/40 p-3.5 md:grid-cols-12 dark:border-zinc-800 dark:bg-zinc-950/40"
+                className="grid grid-cols-1 items-end gap-3 rounded-xl border border-[#E4E4E7] bg-[#F4F4F5]/60 p-3.5 md:grid-cols-12 dark:border-[#3F3F46] dark:bg-[#09090B]/50"
               >
                 {/* Descrição */}
                 <div className="md:col-span-4">
@@ -161,7 +167,7 @@ export function DraftReviewPanel({
 
                 {/* Categoria Sugerida pela IA */}
                 <div className="md:col-span-3">
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300">
+                  <label className="mb-1.5 block text-xs font-medium text-[#3F3F46] dark:text-[#D4D4D8]">
                     Categoria Sugerida (IA)
                   </label>
                   <select
@@ -174,7 +180,7 @@ export function DraftReviewPanel({
                         e.target.value as CategoryName
                       )
                     }
-                    className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:border-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    className="flex h-10 w-full rounded-lg border border-[#E4E4E7] bg-[#FFFFFF] px-3 py-2 text-sm text-[#18181B] focus-visible:border-[#DC2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FACBC2]/70 dark:border-[#3F3F46] dark:bg-[#18181B] dark:text-[#F4F4F5]"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat} value={cat}>
@@ -186,7 +192,7 @@ export function DraftReviewPanel({
 
                 {/* Tipo (Entrada / Saída) */}
                 <div className="md:col-span-2">
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-zinc-300">
+                  <label className="mb-1.5 block text-xs font-medium text-[#3F3F46] dark:text-[#D4D4D8]">
                     Natureza
                   </label>
                   <select
@@ -199,7 +205,7 @@ export function DraftReviewPanel({
                         e.target.value as TransactionType
                       )
                     }
-                    className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:border-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    className="flex h-10 w-full rounded-lg border border-[#E4E4E7] bg-[#FFFFFF] px-3 py-2 text-sm text-[#18181B] focus-visible:border-[#DC2626] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FACBC2]/70 dark:border-[#3F3F46] dark:bg-[#18181B] dark:text-[#F4F4F5]"
                   >
                     <option value="EXPENSE">Saída (-)</option>
                     <option value="INCOME">Entrada (+)</option>
@@ -226,20 +232,17 @@ export function DraftReviewPanel({
                   />
                 </div>
 
-                {/* Remover linha */}
+                {/* Remover linha (Ícone Lucide + Texto em linha única) */}
                 <div className="flex justify-end md:col-span-1">
                   <Button
                     type="button"
-                    size="icon"
+                    size="sm"
                     variant="expense"
+                    icon={Trash2}
                     aria-label={`Remover lançamento ${item.description}`}
                     onClick={() => handleRemoveRow(idx)}
                   >
-                    <Trash2
-                      className="h-4 w-4"
-                      strokeWidth={1.5}
-                      aria-hidden="true"
-                    />
+                    Remover
                   </Button>
                 </div>
               </div>
@@ -248,23 +251,23 @@ export function DraftReviewPanel({
         )}
 
         {/* Rodapé de Resumo do Rascunho + Botão de Aprovação */}
-        <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 sm:flex-row sm:items-center dark:border-zinc-800 dark:bg-zinc-950/60">
+        <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-[#E4E4E7] bg-[#F4F4F5] p-4 sm:flex-row sm:items-center dark:border-[#3F3F46] dark:bg-[#09090B]">
           <div className="flex flex-wrap items-center gap-4 text-xs">
             <div>
-              <span className="text-slate-500">Entradas no rascunho: </span>
-              <strong className="text-emerald-600 tabular-nums">
-                {formatCurrencyBRL(draftSummary.totalIncome)}
+              <span className="text-[#71717A]">Entradas no rascunho: </span>
+              <strong className="text-[#0CB853] tabular-nums">
+                + {formatCurrencyBRL(draftSummary.totalIncome)}
               </strong>
             </div>
             <div>
-              <span className="text-slate-500">Saídas no rascunho: </span>
-              <strong className="text-red-600 tabular-nums">
-                {formatCurrencyBRL(draftSummary.totalExpense)}
+              <span className="text-[#71717A]">Saídas no rascunho: </span>
+              <strong className="text-[#DF2929] tabular-nums">
+                - {formatCurrencyBRL(draftSummary.totalExpense)}
               </strong>
             </div>
             <div>
-              <span className="text-slate-500">Impacto líquido: </span>
-              <strong className="text-slate-900 tabular-nums dark:text-zinc-100">
+              <span className="text-[#71717A]">Impacto líquido: </span>
+              <strong className="text-[#18181B] tabular-nums dark:text-[#FFFFFF]">
                 {formatCurrencyBRL(draftSummary.totalBalance)}
               </strong>
             </div>

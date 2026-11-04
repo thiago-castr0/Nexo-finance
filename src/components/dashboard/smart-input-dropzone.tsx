@@ -6,17 +6,13 @@ import {
   ClipboardPaste,
   FileText,
   PenLine,
+  ShieldCheck,
   Sparkles,
   UploadCloud,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { processSmartInputAction } from "@/app/actions/transactions";
 import {
@@ -35,9 +31,9 @@ interface SmartInputDropzoneProps {
 }
 
 const PROCESSING_STEPS = [
-  "Validando assinatura de segurança (Magic Bytes)...",
-  "Enviando documento para o cofre do Supabase Storage...",
-  "Nossa IA está lendo o extrato e categorizando os lançamentos...",
+  "Validando assinatura binária (Magic Bytes)...",
+  "Protegendo documento no Supabase Storage...",
+  "IA extraindo itens para a Tela de Rascunho...",
 ] as const;
 
 export function SmartInputDropzone({
@@ -85,8 +81,8 @@ export function SmartInputDropzone({
       setIsProcessing(true);
       setStepIndex(0);
 
-      const timer1 = setTimeout(() => setStepIndex(1), 350);
-      const timer2 = setTimeout(() => setStepIndex(2), 750);
+      const timer1 = setTimeout(() => setStepIndex(1), 300);
+      const timer2 = setTimeout(() => setStepIndex(2), 650);
 
       try {
         const formData = new FormData();
@@ -116,7 +112,18 @@ export function SmartInputDropzone({
     [onDraftExtracted]
   );
 
-  // Suporte global a Ctrl+V (Colar print diretamente no Dashboard - skill_user_flows.md)
+  const handleSimulateSampleStatement = () => {
+    const pdfMagicBytes = new Uint8Array([
+      0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37,
+    ]);
+    const sampleFile = new File(
+      [pdfMagicBytes],
+      "fatura-nubank-novembro-2026.pdf",
+      { type: "application/pdf" }
+    );
+    void handleFileSubmission(sampleFile);
+  };
+
   React.useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
@@ -139,159 +146,186 @@ export function SmartInputDropzone({
   }, [handleFileSubmission]);
 
   return (
-    <Card className="border-slate-200/90 dark:border-zinc-800">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles
-                className="h-4 w-4 text-violet-600"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-              Smart Input com IA (OCR Contextual)
-            </CardTitle>
-            <Badge variant="purple">Beta</Badge>
-          </div>
-          <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-400">
+    <Card className="nexo-card-hover relative flex h-full flex-col justify-between overflow-hidden border-[#C59BE3] bg-[#FFFFFF] p-6 hover:border-[#7E32B5] dark:border-[#7E32B5] dark:bg-[#18181B]">
+      {/* Faixa Superior Roxo IA -> Vermelho Marca */}
+      <div
+        className="pointer-events-none absolute top-0 right-0 left-0 h-1.5"
+        style={{
+          background: "linear-gradient(90deg, #692296 0%, #A466D1 50%, #DC2626 100%)",
+        }}
+      />
+
+      {/* Cabeçalho do Copiloto Smart Input */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <Badge variant="purple" icon={Sparkles}>
+            Copiloto IA • OCR
+          </Badge>
+          <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-medium text-[#71717A] dark:text-[#D4D4D8]">
             <ClipboardPaste
-              className="h-3.5 w-3.5"
+              className="h-3 w-3 text-[#692296]"
               strokeWidth={1.5}
               aria-hidden="true"
             />
-            Dica: pressione <kbd className="rounded border px-1 py-0.5 text-[11px]">Ctrl+V</kbd> para colar um print
+            Atalho{" "}
+            <kbd className="rounded border border-[#D4D4D8] bg-[#F4F4F5] px-1.5 py-0.5 font-mono text-[10px] dark:border-[#3F3F46] dark:bg-[#09090B]">
+              Ctrl+V
+            </kbd>
           </span>
         </div>
-        <CardDescription>
-          Arraste seu extrato PDF ou foto de comprovante. A IA extrai os dados e
-          abre um <strong>Rascunho (Draft)</strong> para sua revisão antes de
-          afetar o saldo.
-        </CardDescription>
-      </CardHeader>
 
-      <CardContent>
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-            const droppedFile = e.dataTransfer.files?.[0];
-            if (droppedFile) {
-              void handleFileSubmission(droppedFile);
+        <h2 className="text-base font-bold tracking-tight text-[#18181B] dark:text-[#FFFFFF]">
+          Smart Input Automatizado
+        </h2>
+        <p className="text-xs leading-relaxed text-[#71717A] dark:text-[#D4D4D8]">
+          Solte extratos PDF ou prints de PIX. A IA categoriza cada item e abre
+          o <strong>Modo Rascunho</strong> para sua aprovação.
+        </p>
+      </div>
+
+      {/* Zona de Drop Interativa */}
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          const droppedFile = e.dataTransfer.files?.[0];
+          if (droppedFile) {
+            void handleFileSubmission(droppedFile);
+          }
+        }}
+        className={`my-4 flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed p-5 text-center transition-all duration-200 ${
+          isDragging
+            ? "scale-[1.01] border-[#692296] bg-[#DEC5EF]/45 dark:bg-[#692296]/25"
+            : "border-[#C59BE3] bg-[#DEC5EF]/15 hover:border-[#7E32B5] hover:bg-[#DEC5EF]/30 dark:border-[#7E32B5]/60 dark:bg-[#09090B]/50"
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          data-testid="smart-input-file"
+          type="file"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"
+          className="sr-only"
+          onChange={(e) => {
+            const selected = e.target.files?.[0];
+            if (selected) {
+              void handleFileSubmission(selected);
+              e.target.value = "";
             }
           }}
-          className={`flex flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center transition-all ${
-            isDragging
-              ? "border-violet-500 bg-violet-50/40 dark:bg-violet-950/20"
-              : "border-slate-300 bg-slate-50/50 hover:border-rose-400 dark:border-zinc-700 dark:bg-zinc-900/40"
-          }`}
-        >
-          <input
-            ref={fileInputRef}
-            data-testid="smart-input-file"
-            type="file"
-            accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"
-            className="sr-only"
-            onChange={(e) => {
-              const selected = e.target.files?.[0];
-              if (selected) {
-                void handleFileSubmission(selected);
-                e.target.value = "";
-              }
-            }}
-          />
+        />
 
-          {isProcessing ? (
-            <div
-              role="status"
-              aria-live="polite"
-              className="flex w-full max-w-md flex-col items-center space-y-3 py-2"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-300 bg-violet-50 text-violet-600">
-                <Sparkles
-                  className="h-5 w-5 animate-pulse"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-              </div>
-              <p className="text-sm font-medium text-slate-800 dark:text-zinc-100">
-                {PROCESSING_STEPS[stepIndex]}
-              </p>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
-                <div
-                  className="h-full rounded-full bg-violet-600 transition-all duration-300"
-                  style={{ width: `${((stepIndex + 1) / 3) * 100}%` }}
-                />
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-rose-600 dark:border-zinc-700 dark:bg-zinc-800">
-                <UploadCloud
-                  className="h-5 w-5"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-              </div>
-              <p className="mt-3 text-sm font-medium text-slate-800 dark:text-zinc-200">
-                Arraste e solte sua fatura PDF ou print de PIX aqui
-              </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                PDF, PNG, JPG ou WEBP (máx. 10MB) • Validação Magic Bytes ativa
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                <Button
-                  type="button"
-                  variant="primary"
-                  icon={FileText}
-                  data-testid="select-document-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  Selecionar Extrato ou Recibo
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Prevenção de Dead-Ends (skill_user_flows.md Regra 3 & skill_accessibility.md Regra 5) */}
-        {errorMsg ? (
+        {isProcessing ? (
           <div
-            role="alert"
-            data-testid="smart-input-error"
-            className="mt-4 flex flex-col items-start justify-between gap-3 rounded-xl border border-red-200 bg-red-50/70 p-4 sm:flex-row sm:items-center dark:border-red-900/60 dark:bg-red-950/30"
+            role="status"
+            aria-live="polite"
+            className="flex w-full flex-col items-center space-y-3 py-2"
           >
-            <div className="flex items-start gap-2.5 text-xs text-red-700 dark:text-red-300">
-              <AlertTriangle
-                className="mt-0.5 h-4 w-4 shrink-0 text-red-600"
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#A466D1] bg-[#DEC5EF]/60 text-[#692296]">
+              <Sparkles
+                className="h-5 w-5 animate-spin"
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <div>
-                <p className="font-semibold">
-                  Não foi possível concluir a leitura automática
-                </p>
-                <p className="mt-0.5">{errorMsg}</p>
-              </div>
             </div>
-
-            <Button
-              type="button"
-              size="sm"
-              variant="expense"
-              icon={PenLine}
-              onClick={onOpenManualFallback}
-            >
-              Preencher Manualmente
-            </Button>
+            <p className="text-xs font-semibold text-[#18181B] dark:text-[#F4F4F5]">
+              {PROCESSING_STEPS[stepIndex]}
+            </p>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#E4E4E7] dark:bg-[#3F3F46]">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-[#692296] to-[#DC2626] transition-all duration-300"
+                style={{ width: `${((stepIndex + 1) / 3) * 100}%` }}
+              />
+            </div>
           </div>
-        ) : null}
-      </CardContent>
+        ) : (
+          <>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#C59BE3] bg-[#FFFFFF] text-[#692296] shadow-2xs transition-transform duration-200 hover:scale-105 dark:border-[#7E32B5] dark:bg-[#18181B] dark:text-[#C59BE3]">
+              <UploadCloud
+                className="h-5 w-5"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-[#18181B] dark:text-[#F4F4F5]">
+              Arraste seu extrato PDF ou print aqui
+            </p>
+            <p className="mt-0.5 text-[11px] text-[#71717A] dark:text-[#D4D4D8]">
+              Até 10MB • PDF, PNG, JPG ou WEBP
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Botões de Ação (Sempre em linha única com Ícone Lucide + Texto) */}
+      <div className="space-y-2.5">
+        <div className="flex flex-col gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            icon={Wand2}
+            data-testid="simulate-ocr-btn"
+            onClick={handleSimulateSampleStatement}
+            className="w-full justify-center"
+          >
+            Simular Extrato IA (1 Clique)
+          </Button>
+
+          <Button
+            type="button"
+            variant="primary"
+            icon={FileText}
+            data-testid="select-document-btn"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full justify-center"
+          >
+            Selecionar Arquivo Local
+          </Button>
+        </div>
+
+        <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-[#71717A] dark:text-[#D4D4D8]">
+          <ShieldCheck
+            className="h-3.5 w-3.5 shrink-0 text-[#692296]"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <span className="truncate">
+            Magic Bytes & Mascaramento de CPF ativos
+          </span>
+        </div>
+      </div>
+
+      {/* Fallback de Erro Amigável */}
+      {errorMsg ? (
+        <div
+          role="alert"
+          data-testid="smart-input-error"
+          className="mt-3 space-y-2 rounded-xl border border-[#F4948C] bg-[#F9C5BD]/35 p-3 dark:border-[#E54541] dark:bg-[#DF2929]/15"
+        >
+          <div className="flex items-start gap-2 text-xs text-[#DF2929] dark:text-[#F9C5BD]">
+            <AlertTriangle
+              className="mt-0.5 h-4 w-4 shrink-0 text-[#DF2929]"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            <span>{errorMsg}</span>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="expense"
+            icon={PenLine}
+            onClick={onOpenManualFallback}
+            className="w-full"
+          >
+            Preencher Manualmente
+          </Button>
+        </div>
+      ) : null}
     </Card>
   );
 }

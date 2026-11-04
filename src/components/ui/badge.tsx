@@ -4,24 +4,24 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full border border-solid px-2.5 py-0.5 text-xs font-medium transition-colors",
+  "inline-flex flex-row flex-nowrap items-center gap-1.5 whitespace-nowrap shrink-0 rounded-full border border-solid px-2.5 py-0.5 text-xs font-medium leading-none transition-colors [&_svg]:shrink-0 [&_svg]:inline-block",
   {
     variants: {
       variant: {
         brand:
-          "border-rose-200 bg-rose-50/70 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300",
+          "border-[#F59B92] bg-[#FACBC2]/45 text-[#DC2626] dark:border-[#DC2626] dark:bg-[#DC2626]/20 dark:text-[#FACBC2]",
         purple:
-          "border-violet-200 bg-violet-50/70 text-violet-700 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-300",
+          "border-[#C59BE3] bg-[#DEC5EF]/50 text-[#692296] dark:border-[#7E32B5] dark:bg-[#692296]/25 dark:text-[#DEC5EF]",
         income:
-          "border-emerald-200 bg-emerald-50/70 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300",
+          "border-[#7BD6A0] bg-[#BCE5CB]/45 text-[#0CB853] dark:border-[#13BD5B] dark:bg-[#0CB853]/20 dark:text-[#BCE5CB]",
         expense:
-          "border-red-200 bg-red-50/70 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
+          "border-[#F4948C] bg-[#F9C5BD]/45 text-[#DF2929] dark:border-[#E54541] dark:bg-[#DF2929]/20 dark:text-[#F9C5BD]",
         warning:
-          "border-amber-200 bg-amber-50/70 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+          "border-[#ECD54A] bg-[#EDE08D]/50 text-[#EA920F] dark:border-[#EDAD12] dark:bg-[#EA920F]/20 dark:text-[#EDE08D]",
         info:
-          "border-blue-200 bg-blue-50/70 text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300",
+          "border-[#8CB9EB] bg-[#BCD6F2]/50 text-[#2572CE] dark:border-[#448BDE] dark:bg-[#2572CE]/20 dark:text-[#BCD6F2]",
         neutral:
-          "border-slate-200 bg-slate-50 text-slate-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300",
+          "border-[#E4E4E7] bg-[#F4F4F5] text-[#3F3F46] dark:border-[#3F3F46] dark:bg-[#18181B] dark:text-[#D4D4D8]",
       },
     },
     defaultVariants: {
