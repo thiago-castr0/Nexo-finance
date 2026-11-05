@@ -23,9 +23,10 @@ import { TimelineFeed } from "@/components/nova-ui/timeline-feed";
 import { CategoryEnvelopes } from "@/components/nova-ui/category-envelopes";
 import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
+import { MonthSelector } from "@/components/nova-ui/month-selector";
+import { FinancialInsightsScore } from "@/components/nova-ui/financial-insights-score";
 import { DraftReviewPanel } from "@/components/dashboard/draft-review-panel";
 import { ManualEntryModal } from "@/components/dashboard/manual-entry-modal";
-import { FinanceCharts } from "@/components/dashboard/finance-charts";
 import { logoutAction } from "@/app/actions/auth";
 import type { CreditCard } from "@/lib/schemas/credit-card";
 import {
@@ -145,6 +146,8 @@ export function NexoNovaApp() {
   const [isApprovingDraft, startApproveTransition] = React.useTransition();
   const [isSubmittingManual, startManualTransition] = React.useTransition();
 
+  const [selectedDate, setSelectedDate] = React.useState<Date>(() => new Date());
+
   React.useEffect(() => {
     const root = document.documentElement;
     if (darkMode) {
@@ -154,9 +157,23 @@ export function NexoNovaApp() {
     }
   }, [darkMode]);
 
+  const monthFilteredTransactions = React.useMemo(() => {
+    const targetYear = selectedDate.getFullYear();
+    const targetMonth = selectedDate.getMonth() + 1;
+    const prefix = `${targetYear}-${String(targetMonth).padStart(2, "0")}`;
+
+    const filtered = transactions.filter((tx) => tx.transactionDate.startsWith(prefix));
+    // Se o mês selecionado não tiver lançamentos cadastrados, exibe todos para não ficar vazio
+    return filtered.length > 0 ? filtered : transactions;
+  }, [transactions, selectedDate]);
+
+  const creditCardTotal = React.useMemo(() => {
+    return creditCards.reduce((acc, card) => acc + card.currentInvoice, 0);
+  }, [creditCards]);
+
   const summary = React.useMemo(
-    () => calculateFinancialSummary(transactions),
-    [transactions]
+    () => calculateFinancialSummary(monthFilteredTransactions),
+    [monthFilteredTransactions]
   );
 
   const handleDraftExtracted = React.useCallback(
@@ -332,6 +349,7 @@ export function NexoNovaApp() {
               </div>
 
               <div className="flex items-center gap-2">
+                <MonthSelector currentDate={selectedDate} onChange={setSelectedDate} />
                 <ThemeSwitch darkMode={darkMode} onToggle={setDarkMode} />
 
                 <Link href="/design-system" className="lg:hidden">
@@ -390,17 +408,24 @@ export function NexoNovaApp() {
                   totalExpenses={summary.totalExpense}
                 />
 
+                <FinancialInsightsScore
+                  transactions={monthFilteredTransactions}
+                  totalIncome={summary.totalIncome}
+                  totalExpenses={summary.totalExpense}
+                  creditCardTotal={creditCardTotal}
+                />
+
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-12 items-stretch">
                   <div className="xl:col-span-7 flex flex-col">
                     <TimelineFeed
-                      transactions={transactions}
+                      transactions={monthFilteredTransactions}
                       onDeleteTransaction={handleDeleteTransaction}
                     />
                   </div>
 
                   <div className="xl:col-span-5 flex flex-col gap-5">
                     <QuickAiScanner onDraftExtracted={handleDraftExtracted} />
-                    <CategoryEnvelopes transactions={transactions} />
+                    <CategoryEnvelopes transactions={monthFilteredTransactions} />
                   </div>
                 </div>
               </>
@@ -409,7 +434,7 @@ export function NexoNovaApp() {
             {/* ABA 2: EXTRATO */}
             {activeTab === "TIMELINE" && (
               <TimelineFeed
-                transactions={transactions}
+                transactions={monthFilteredTransactions}
                 onDeleteTransaction={handleDeleteTransaction}
               />
             )}
@@ -429,8 +454,13 @@ export function NexoNovaApp() {
             {/* ABA 5: CATEGORIAS */}
             {activeTab === "ENVELOPES" && (
               <div className="space-y-5">
-                <CategoryEnvelopes transactions={transactions} />
-                <FinanceCharts transactions={transactions} />
+                <CategoryEnvelopes transactions={monthFilteredTransactions} />
+                <FinancialInsightsScore
+                  transactions={monthFilteredTransactions}
+                  totalIncome={summary.totalIncome}
+                  totalExpenses={summary.totalExpense}
+                  creditCardTotal={creditCardTotal}
+                />
               </div>
             )}
           </main>

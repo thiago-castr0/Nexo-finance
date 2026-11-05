@@ -224,3 +224,20 @@
     transform: none !important;
   }
 }
+
+@media print {
+  aside,
+  header,
+  nav,
+  button,
+  .pointer-events-none {
+    display: none !important;
+  }
+  body,
+  main {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
