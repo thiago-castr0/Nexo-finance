@@ -1,101 +1,225 @@
 @import "tailwindcss";
-@config "../../tailwind.config.ts";
 
 :root {
-  /* Neutros: Branco, Tons de Cinza e Preto */
-  --nexo-white: #ffffff;
-  --nexo-gray-100: #f4f4f5;
-  --nexo-gray-200: #e4e4e7;
-  --nexo-gray-300: #d4d4d8;
-  --nexo-gray-500: #71717a;
-  --nexo-gray-700: #3f3f46;
-  --nexo-gray-900: #18181b;
-  --nexo-black: #09090b;
+  /* ==========================================================================
+     1. PRIMITIVE COLOR MATRIX (38 TOKENS — 6x5 SCALES + 8 NEUTRALS)
+     ========================================================================== */
+  /* RED — Brand Primary (2TP Signature) */
+  --nexo-red-500: #DC2626;
+  --nexo-red-400: #E85950;
+  --nexo-red-300: #EE7870;
+  --nexo-red-200: #F59B92;
+  --nexo-red-100: #FACBC2;
 
-  /* RED (Marca Primária) */
-  --nexo-red-500: #dc2626;
-  --nexo-red-400: #e85950;
-  --nexo-red-300: #ee7870;
-  --nexo-red-200: #f59b92;
-  --nexo-red-100: #facbc2;
-
-  /* PURPLE (Marca Secundária / IA) */
+  /* PURPLE — Brand Secondary / AI & OCR */
   --nexo-purple-500: #692296;
-  --nexo-purple-400: #7e32b5;
-  --nexo-purple-300: #a466d1;
-  --nexo-purple-200: #c59be3;
-  --nexo-purple-100: #dec5ef;
+  --nexo-purple-400: #7E32B5;
+  --nexo-purple-300: #A466D1;
+  --nexo-purple-200: #C59BE3;
+  --nexo-purple-100: #DEC5EF;
 
-  /* ALERT (Atenção / Vencimentos) */
-  --nexo-alert-500: #ea920f;
-  --nexo-alert-400: #edad12;
-  --nexo-alert-300: #ecc023;
-  --nexo-alert-200: #ecd54a;
-  --nexo-alert-100: #ede08d;
+  /* ALERT — Semantic Warning / Draft Pending */
+  --nexo-alert-500: #EA920F;
+  --nexo-alert-400: #EDAD12;
+  --nexo-alert-300: #ECC023;
+  --nexo-alert-200: #ECD54A;
+  --nexo-alert-100: #EDE08D;
 
-  /* SUCCESS (Receitas / Entradas / Sucesso) */
-  --nexo-success-500: #0cb853;
-  --nexo-success-400: #13bd5b;
-  --nexo-success-300: #46c87d;
-  --nexo-success-200: #7bd6a0;
-  --nexo-success-100: #bce5cb;
+  /* SUCCESS — Semantic Income / Positive */
+  --nexo-success-500: #0CB853;
+  --nexo-success-400: #13BD5B;
+  --nexo-success-300: #46C87D;
+  --nexo-success-200: #7BD6A0;
+  --nexo-success-100: #BCE5CB;
 
-  /* ERROR / DANGER (Despesas / Saídas / Erros) */
-  --nexo-danger-500: #df2929;
-  --nexo-danger-400: #e54541;
-  --nexo-danger-300: #ec6862;
-  --nexo-danger-200: #f4948c;
-  --nexo-danger-100: #f9c5bd;
+  /* ERROR / DANGER — Semantic Expense / Critical */
+  --nexo-danger-500: #DF2929;
+  --nexo-danger-400: #E54541;
+  --nexo-danger-300: #EC6862;
+  --nexo-danger-200: #F4948C;
+  --nexo-danger-100: #F9C5BD;
 
-  /* INFO (Informativo / Ações Neutras) */
-  --nexo-info-500: #2572ce;
-  --nexo-info-400: #448bde;
-  --nexo-info-300: #65a2e6;
-  --nexo-info-200: #8cb9eb;
-  --nexo-info-100: #bcd6f2;
+  /* INFO — Semantic Metadata / System RLS */
+  --nexo-info-500: #2572CE;
+  --nexo-info-400: #448BDE;
+  --nexo-info-300: #65A2E6;
+  --nexo-info-200: #8CB9EB;
+  --nexo-info-100: #BCD6F2;
 
-  /* Tokens Semânticos de Superfície */
-  --background: var(--nexo-gray-100);
-  --surface: var(--nexo-white);
-  --foreground: var(--nexo-gray-900);
-  --muted-foreground: var(--nexo-gray-500);
-  --border-subtle: var(--nexo-gray-200);
+  /* NEUTRALS (8 Foundations) */
+  --nexo-black: #09090B;
+  --nexo-gray-900: #18181B;
+  --nexo-gray-700: #3F3F46;
+  --nexo-gray-500: #71717A;
+  --nexo-gray-300: #D4D4D8;
+  --nexo-gray-200: #E4E4E7;
+  --nexo-gray-100: #F4F4F5;
+  --nexo-white: #FFFFFF;
+
+  /* ==========================================================================
+     2. SEMANTIC TOKEN ARCHITECTURE — LIGHT MODE (iOS Pearlescent Glass)
+     ========================================================================== */
+  --surface-canvas: #F4F4F5;
+  --surface-glass-sm: rgba(255, 255, 255, 0.58);
+  --surface-glass-md: rgba(255, 255, 255, 0.74);
+  --surface-glass-heavy: rgba(255, 255, 255, 0.88);
+  --surface-elevated: #FFFFFF;
+  --surface-subtle: rgba(244, 244, 245, 0.72);
+
+  /* Specular & Structural Borders (1px Solid) */
+  --border-glass: rgba(228, 228, 231, 0.82);
+  --border-glass-strong: rgba(212, 212, 216, 0.95);
+  --border-specular-inset: rgba(255, 255, 255, 0.85);
+  --border-brand-active: var(--nexo-red-500);
+  --border-ai-active: var(--nexo-purple-500);
+
+  /* Semantic Typography */
+  --text-primary: var(--nexo-gray-900);
+  --text-secondary: var(--nexo-gray-700);
+  --text-muted: var(--nexo-gray-500);
+
+  /* Semantic Intents */
+  --intent-brand: var(--nexo-red-500);
+  --intent-brand-soft: rgba(250, 203, 194, 0.42);
+  --intent-ai: var(--nexo-purple-500);
+  --intent-ai-soft: rgba(222, 197, 239, 0.45);
+  --intent-income: var(--nexo-success-500);
+  --intent-income-soft: rgba(188, 229, 203, 0.42);
+  --intent-expense: var(--nexo-danger-500);
+  --intent-expense-soft: rgba(249, 197, 189, 0.42);
+  --intent-warning: var(--nexo-alert-500);
+  --intent-warning-soft: rgba(237, 224, 141, 0.48);
+  --intent-info: var(--nexo-info-500);
+  --intent-info-soft: rgba(188, 214, 242, 0.45);
+
+  /* Spatial Glows & Shadows */
+  --shadow-glass: 0 12px 32px -8px rgba(24, 24, 27, 0.06), 0 2px 6px -1px rgba(24, 24, 27, 0.04);
+  --glow-brand: 0 10px 30px -6px rgba(220, 38, 38, 0.22);
+  --glow-ai: 0 10px 30px -6px rgba(105, 34, 150, 0.24);
+  --glow-income: 0 10px 30px -6px rgba(12, 184, 83, 0.20);
+  --glow-expense: 0 10px 30px -6px rgba(223, 41, 41, 0.20);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+.dark {
+  /* ==========================================================================
+     3. SEMANTIC TOKEN ARCHITECTURE — DARK MODE (VisionOS Spatial Obsidian Glass)
+     ========================================================================== */
+  --surface-canvas: #09090B;
+  --surface-glass-sm: rgba(24, 24, 27, 0.50);
+  --surface-glass-md: rgba(24, 24, 27, 0.68);
+  --surface-glass-heavy: rgba(24, 24, 27, 0.84);
+  --surface-elevated: #18181B;
+  --surface-subtle: rgba(39, 39, 42, 0.55);
+
+  /* Specular & Structural Borders (1px Solid) */
+  --border-glass: rgba(255, 255, 255, 0.11);
+  --border-glass-strong: rgba(255, 255, 255, 0.18);
+  --border-specular-inset: rgba(255, 255, 255, 0.12);
+  --border-brand-active: var(--nexo-red-400);
+  --border-ai-active: var(--nexo-purple-300);
+
+  /* Semantic Typography */
+  --text-primary: var(--nexo-gray-100);
+  --text-secondary: var(--nexo-gray-300);
+  --text-muted: #A1A1AA;
+
+  /* Semantic Intents */
+  --intent-brand: var(--nexo-red-400);
+  --intent-brand-soft: rgba(220, 38, 38, 0.18);
+  --intent-ai: var(--nexo-purple-300);
+  --intent-ai-soft: rgba(105, 34, 150, 0.24);
+  --intent-income: var(--nexo-success-300);
+  --intent-income-soft: rgba(12, 184, 83, 0.18);
+  --intent-expense: var(--nexo-danger-300);
+  --intent-expense-soft: rgba(223, 41, 41, 0.18);
+  --intent-warning: var(--nexo-alert-300);
+  --intent-warning-soft: rgba(234, 146, 15, 0.18);
+  --intent-info: var(--nexo-info-300);
+  --intent-info-soft: rgba(37, 114, 206, 0.20);
+
+  /* Spatial Glows & Shadows */
+  --shadow-glass: 0 16px 40px -10px rgba(0, 0, 0, 0.55), 0 4px 12px -2px rgba(0, 0, 0, 0.35);
+  --glow-brand: 0 12px 34px -6px rgba(232, 89, 80, 0.28);
+  --glow-ai: 0 12px 34px -6px rgba(164, 102, 209, 0.30);
+  --glow-income: 0 12px 34px -6px rgba(70, 200, 125, 0.25);
+  --glow-expense: 0 12px 34px -6px rgba(236, 104, 98, 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--nexo-black);
-    --surface: var(--nexo-gray-900);
-    --foreground: var(--nexo-gray-100);
-    --muted-foreground: var(--nexo-gray-300);
-    --border-subtle: var(--nexo-gray-700);
+@layer base {
+  * {
+    border-color: var(--border-glass);
+  }
+
+  body {
+    background-color: var(--surface-canvas);
+    color: var(--text-primary);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+/* ==========================================================================
+   4. SPATIAL GLASSMORPHISM UTILITIES (iOS / VisionOS Frosted Surfaces)
+   ========================================================================== */
+.nexo-glass-panel {
+  background: var(--surface-glass-md);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-glass);
+  box-shadow: inset 0 1px 0 0 var(--border-specular-inset), var(--shadow-glass);
 }
 
-/* Regra de Tipografia Financeira: Numerais Tabulares obrigatórios para valores */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
+.nexo-glass-heavy {
+  background: var(--surface-glass-heavy);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid var(--border-glass-strong);
+  box-shadow: inset 0 1px 0 0 var(--border-specular-inset), var(--shadow-glass);
 }
 
-/* Microinterações e Superfícies da Marca 2TP / Nexo Finance */
+.nexo-glass-subtle {
+  background: var(--surface-glass-sm);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--border-glass);
+  box-shadow: inset 0 1px 0 0 var(--border-specular-inset);
+}
+
 .nexo-card-hover {
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 200ms ease, box-shadow 200ms ease;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 200ms ease;
 }
 
 .nexo-card-hover:hover {
   transform: translateY(-2px);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes nexo-pulse-slow {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.06);
+  }
+}
+
+.animate-aurora {
+  animation: nexo-pulse-slow 8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nexo-card-hover,
+  .animate-aurora {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
 }

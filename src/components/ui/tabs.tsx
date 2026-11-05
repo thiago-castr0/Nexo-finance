@@ -20,7 +20,7 @@ export interface SegmentedTabsProps<T extends string = string> {
 }
 
 /**
- * Componente de Abas Segmentadas em Linha Única (Ícone Lucide + Texto)
+ * Abas Segmentadas Nítidas e Sólidas (Sem glass nos botões internos para máxima legibilidade)
  */
 export function SegmentedTabs<T extends string = string>({
   options,
@@ -33,7 +33,7 @@ export function SegmentedTabs<T extends string = string>({
     <div
       role="tablist"
       className={cn(
-        "inline-flex flex-wrap items-center gap-1.5 rounded-xl border border-[#E4E4E7] bg-[#F4F4F5]/90 p-1 dark:border-[#3F3F46] dark:bg-[#09090B]/90",
+        "inline-flex flex-wrap items-center gap-1.5 rounded-xl border border-[#D4D4D8] bg-[#F4F4F5] p-1 dark:border-[#3F3F46] dark:bg-[#09090B]",
         className
       )}
     >
@@ -49,15 +49,15 @@ export function SegmentedTabs<T extends string = string>({
             aria-selected={isActive}
             onClick={() => onChange(option.id)}
             className={cn(
-              "inline-flex flex-nowrap items-center gap-2 whitespace-nowrap shrink-0 rounded-lg border px-3.5 py-2 text-xs font-semibold leading-none transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EE7870]",
+              "inline-flex flex-row flex-nowrap items-center gap-2 whitespace-nowrap shrink-0 rounded-lg border px-3.5 py-2 text-xs font-bold leading-none transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EE7870] [&_svg]:shrink-0 [&_svg]:inline-block",
               isActive
                 ? variant === "brand"
-                  ? "border-[#F59B92] bg-[#FFFFFF] text-[#DC2626] shadow-2xs dark:border-[#DC2626] dark:bg-[#18181B] dark:text-[#FACBC2]"
-                  : "border-[#C59BE3] bg-[#FFFFFF] text-[#692296] shadow-2xs dark:border-[#7E32B5] dark:bg-[#18181B] dark:text-[#DEC5EF]"
-                : "border-transparent bg-transparent text-[#71717A] hover:text-[#18181B] dark:text-[#D4D4D8] dark:hover:text-[#FFFFFF]"
+                  ? "border-[#DC2626] bg-[#FFFFFF] text-[#DC2626] shadow-xs dark:border-[#E85950] dark:bg-[#18181B] dark:text-[#FACBC2]"
+                  : "border-[#692296] bg-[#FFFFFF] text-[#692296] shadow-xs dark:border-[#A466D1] dark:bg-[#18181B] dark:text-[#DEC5EF]"
+                : "border-transparent bg-transparent text-[#3F3F46] hover:bg-[#FFFFFF]/80 hover:text-[#18181B] dark:text-[#D4D4D8] dark:hover:bg-[#18181B] dark:hover:text-[#FFFFFF]"
             )}
           >
-            <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+            <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
             <span className="whitespace-nowrap">{option.label}</span>
             {option.badge !== undefined ? (
               <span
@@ -65,9 +65,9 @@ export function SegmentedTabs<T extends string = string>({
                   "rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums",
                   isActive
                     ? variant === "brand"
-                      ? "bg-[#FACBC2]/60 text-[#DC2626] dark:bg-[#DC2626]/30 dark:text-[#FACBC2]"
-                      : "bg-[#DEC5EF]/60 text-[#692296] dark:bg-[#692296]/30 dark:text-[#DEC5EF]"
-                    : "bg-[#E4E4E7] text-[#3F3F46] dark:bg-[#3F3F46] dark:text-[#D4D4D8]"
+                      ? "bg-[#FACBC2] text-[#18181B]"
+                      : "bg-[#DEC5EF] text-[#18181B]"
+                    : "bg-[#E4E4E7] text-[#18181B] dark:bg-[#27272A] dark:text-[#F4F4F5]"
                 )}
               >
                 {option.badge}

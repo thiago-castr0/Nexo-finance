@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Nexo Finance | Controle Financeiro Inteligente",
+  title: "Nexo Finance | Controle Financeiro Inteligente (2TP)",
   description:
-    "Aplicação web de controle financeiro pessoal automatizada com Inteligência Artificial.",
+    "Aplicação web de controle financeiro pessoal automatizada com Inteligência Artificial — 2TP Soluções em Tecnologia.",
 };
 
 export default function RootLayout({
@@ -19,8 +19,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans text-slate-900 bg-slate-50/50 dark:bg-zinc-950 dark:text-zinc-100">
+    <html
+      lang="pt-BR"
+      suppressHydrationWarning
+      className={`${inter.variable} h-full antialiased`}
+    >
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col font-sans bg-[var(--surface-canvas)] text-[var(--text-primary)]"
+      >
         {children}
       </body>
     </html>

@@ -4,26 +4,27 @@ import * as React from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
+  Briefcase,
+  Cpu,
   FileSpreadsheet,
+  Home,
   Layers,
-  PenLine,
   PlusCircle,
   Search,
+  ShoppingBag,
   Sparkles,
-  Tag,
   Trash2,
   UploadCloud,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { GlassPanel } from "@/components/ui/glass-panel";
 import { Badge } from "@/components/ui/badge";
+import {
+  FilterChipGroup,
+  type FilterChipOption,
+} from "@/components/ui/filter-chips";
 import { formatCurrencyBRL } from "@/lib/finance";
 import type { TransactionRecord } from "@/lib/schemas/transaction";
 
@@ -36,6 +37,42 @@ interface TransactionsTableProps {
 
 type FilterMode = "ALL" | "INCOME" | "EXPENSE" | "AI_OCR";
 
+function getCategoryVisual(category: string, isIncome: boolean) {
+  const lower = category.toLowerCase();
+  if (isIncome || lower.includes("salário") || lower.includes("renda")) {
+    return {
+      icon: Briefcase,
+      bg: "bg-[#0CB853]/12 text-[#0CB853] dark:bg-[#0CB853]/20 dark:text-[#46C87D]",
+    };
+  }
+  if (lower.includes("moradia") || lower.includes("aluguel")) {
+    return {
+      icon: Home,
+      bg: "bg-[#DC2626]/12 text-[#DC2626] dark:bg-[#DC2626]/20 dark:text-[#F59B92]",
+    };
+  }
+  if (lower.includes("alimenta") || lower.includes("mercado")) {
+    return {
+      icon: ShoppingBag,
+      bg: "bg-[#692296]/12 text-[#692296] dark:bg-[#692296]/25 dark:text-[#DEC5EF]",
+    };
+  }
+  if (
+    lower.includes("assinatura") ||
+    lower.includes("software") ||
+    lower.includes("cloud")
+  ) {
+    return {
+      icon: Cpu,
+      bg: "bg-[#2572CE]/12 text-[#2572CE] dark:bg-[#2572CE]/20 dark:text-[#8CB9EB]",
+    };
+  }
+  return {
+    icon: Wallet,
+    bg: "bg-[#EA920F]/12 text-[#EA920F] dark:bg-[#EA920F]/20 dark:text-[#ECD54A]",
+  };
+}
+
 export function TransactionsTable({
   transactions,
   onDeleteTransaction,
@@ -44,6 +81,49 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   const [filterMode, setFilterMode] = React.useState<FilterMode>("ALL");
   const [searchQuery, setSearchQuery] = React.useState("");
+
+  const counts = React.useMemo(() => {
+    let income = 0;
+    let expense = 0;
+    let ai = 0;
+    for (const tx of transactions) {
+      if (tx.type === "INCOME") income++;
+      if (tx.type === "EXPENSE") expense++;
+      if (tx.source === "AI_OCR") ai++;
+    }
+    return { all: transactions.length, income, expense, ai };
+  }, [transactions]);
+
+  const filterChips: FilterChipOption<FilterMode>[] = [
+    {
+      id: "ALL",
+      label: "Todos",
+      icon: Layers,
+      count: counts.all,
+      intent: "brand",
+    },
+    {
+      id: "INCOME",
+      label: "Entradas",
+      icon: ArrowUpRight,
+      count: counts.income,
+      intent: "income",
+    },
+    {
+      id: "EXPENSE",
+      label: "Saídas",
+      icon: ArrowDownRight,
+      count: counts.expense,
+      intent: "expense",
+    },
+    {
+      id: "AI_OCR",
+      label: "IA",
+      icon: Sparkles,
+      count: counts.ai,
+      intent: "ai",
+    },
+  ];
 
   const filteredTransactions = React.useMemo(() => {
     return transactions.filter((tx) => {
@@ -63,79 +143,29 @@ export function TransactionsTable({
   }, [transactions, filterMode, searchQuery]);
 
   return (
-    <Card className="nexo-card-hover">
-      <CardHeader className="space-y-4 border-b border-[#E4E4E7] pb-4 dark:border-[#3F3F46]">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-base">
-              Livro-Razão de Lançamentos ({filteredTransactions.length})
-            </CardTitle>
-            <CardDescription>
-              Alinhamento em numerais tabulares, categorização inteligente e
-              filtragem instantânea
-            </CardDescription>
-          </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="primary"
-            icon={PlusCircle}
-            data-testid="open-manual-modal-btn"
-            onClick={onOpenManualEntry}
-          >
-            Adicionar Lançamento
-          </Button>
+    <GlassPanel intent="neutral" blur="xl" topBeam className="p-5 sm:p-6 space-y-4">
+      {/* Topo Clean: Título + Filtros + Busca na mesma linha */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-base font-bold text-[#18181B] dark:text-[#FFFFFF]">
+            Meus Lançamentos ({filteredTransactions.length})
+          </h2>
+          <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
+            Histórico de receitas e despesas do mês
+          </p>
         </div>
 
-        {/* Barra de Filtros Rápidos (Sempre Ícone Lucide + Texto em linha única) */}
         {transactions.length > 0 ? (
-          <div className="flex flex-col justify-between gap-3 pt-1 lg:flex-row lg:items-center">
-            <div
-              role="group"
-              aria-label="Filtrar lançamentos"
-              className="flex flex-wrap items-center gap-2"
-            >
-              <Button
-                type="button"
-                size="sm"
-                icon={Layers}
-                variant={filterMode === "ALL" ? "primary" : "neutral"}
-                onClick={() => setFilterMode("ALL")}
-              >
-                Todos ({transactions.length})
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                icon={ArrowUpRight}
-                variant={filterMode === "INCOME" ? "income" : "neutral"}
-                onClick={() => setFilterMode("INCOME")}
-              >
-                Entradas (+)
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                icon={ArrowDownRight}
-                variant={filterMode === "EXPENSE" ? "expense" : "neutral"}
-                onClick={() => setFilterMode("EXPENSE")}
-              >
-                Saídas (-)
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={filterMode === "AI_OCR" ? "secondary" : "neutral"}
-                icon={Sparkles}
-                onClick={() => setFilterMode("AI_OCR")}
-              >
-                Lidos por IA
-              </Button>
-            </div>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+            <FilterChipGroup
+              options={filterChips}
+              value={filterMode}
+              onChange={setFilterMode}
+            />
 
-            <div className="w-full lg:w-72">
+            <div className="w-full sm:w-64">
               <Input
-                placeholder="Buscar descrição ou categoria..."
+                placeholder="Buscar lançamento..."
                 icon={Search}
                 value={searchQuery}
                 aria-label="Buscar lançamentos por descrição ou categoria"
@@ -144,91 +174,89 @@ export function TransactionsTable({
             </div>
           </div>
         ) : null}
-      </CardHeader>
+      </div>
 
-      <CardContent className="p-0">
+      {/* Container Clean das Linhas */}
+      <div className="overflow-hidden rounded-2xl border border-[#E4E4E7] bg-white dark:border-white/10 dark:bg-[#1C1C22]">
         {transactions.length === 0 ? (
-          /* Onboarding Silencioso (Zero State) */
           <div
             data-testid="empty-state"
-            className="flex flex-col items-center justify-center px-6 py-14 text-center"
+            className="flex flex-col items-center justify-center px-6 py-12 text-center"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#C59BE3] bg-[#DEC5EF]/45 text-[#692296]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#692296]/10 text-[#692296]">
               <FileSpreadsheet
-                className="h-6 w-6"
-                strokeWidth={1.5}
+                className="h-5 w-5"
+                strokeWidth={1.75}
                 aria-hidden="true"
               />
             </div>
-            <h4 className="mt-4 text-base font-semibold text-[#18181B] dark:text-[#F4F4F5]">
-              Seu controle financeiro começa aqui
+            <h4 className="mt-3 text-sm font-bold text-[#18181B] dark:text-[#FFFFFF]">
+              Nenhum lançamento registrado
             </h4>
-            <p className="mt-1 max-w-md text-xs text-[#71717A] dark:text-[#D4D4D8]">
-              Faça o upload do seu primeiro extrato PDF ou print de comprovante
-              para a IA categorizar automaticamente, ou adicione um lançamento
-              manual.
+            <p className="mt-1 max-w-sm text-xs text-[#71717A] dark:text-[#A1A1AA]">
+              Importe uma fatura com IA ou adicione um gasto manualmente.
             </p>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
               <Button
                 type="button"
+                size="sm"
                 variant="secondary"
                 icon={UploadCloud}
                 onClick={onTriggerUpload}
               >
-                Importar Extrato com IA
+                Importar com IA
               </Button>
               <Button
                 type="button"
-                variant="neutral"
+                size="sm"
+                variant="primary"
                 icon={PlusCircle}
                 onClick={onOpenManualEntry}
               >
-                Adicionar Manualmente
+                Novo Lançamento
               </Button>
             </div>
           </div>
         ) : filteredTransactions.length === 0 ? (
-          <div className="py-10 text-center text-sm text-[#71717A]">
-            Nenhum lançamento encontrado para o filtro selecionado.
+          <div className="py-10 text-center text-xs text-[#71717A] dark:text-[#A1A1AA]">
+            Nenhum lançamento encontrado para este filtro.
           </div>
         ) : (
           <>
-            {/* Visão Mobile-First em Cartões Compactos (< md) */}
-            <div className="divide-y divide-[#E4E4E7] md:hidden dark:divide-[#3F3F46]">
+            {/* Visão Mobile Clean (< md): Cartões Diretos de 1 Olhar */}
+            <div className="divide-y divide-[#E4E4E7] md:hidden dark:divide-white/10">
               {filteredTransactions.map((tx) => {
                 const isIncome = tx.type === "INCOME";
+                const visual = getCategoryVisual(tx.category, isIncome);
+                const CatIcon = visual.icon;
                 return (
                   <div
                     key={`mobile-${tx.id}`}
-                    className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex items-center justify-between gap-3 p-3.5"
                   >
-                    <div className="min-w-0 space-y-1.5">
-                      <p className="truncate text-sm font-semibold text-[#18181B] dark:text-[#F4F4F5]">
-                        {tx.description}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant="neutral" icon={Tag}>
-                          {tx.category}
-                        </Badge>
-                        {tx.source === "AI_OCR" ? (
-                          <Badge variant="purple" icon={Sparkles}>
-                            IA OCR
-                          </Badge>
-                        ) : (
-                          <Badge variant="info" icon={PenLine}>
-                            Manual
-                          </Badge>
-                        )}
-                        <span className="text-[11px] text-[#71717A] tabular-nums">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${visual.bg}`}
+                      >
+                        <CatIcon className="h-4 w-4" strokeWidth={1.75} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#18181B] dark:text-[#FFFFFF]">
+                          {tx.description}
+                        </p>
+                        <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
+                          {tx.category} •{" "}
                           {tx.transactionDate.split("-").reverse().join("/")}
-                        </span>
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 sm:justify-end">
+                    <div className="flex items-center gap-2 shrink-0">
                       <span
                         className={`text-sm font-bold whitespace-nowrap tabular-nums ${
-                          isIncome ? "text-[#0CB853]" : "text-[#DF2929]"
+                          isIncome
+                            ? "text-[#0CB853] dark:text-[#46C87D]"
+                            : "text-[#DF2929] dark:text-[#F4948C]"
                         }`}
                       >
                         {isIncome ? "+ " : "- "}
@@ -237,7 +265,7 @@ export function TransactionsTable({
                       <Button
                         type="button"
                         size="sm"
-                        variant="expense"
+                        variant="ghost"
                         icon={Trash2}
                         aria-label={`Excluir transação ${tx.description}`}
                         onClick={() => onDeleteTransaction(tx.id)}
@@ -250,68 +278,80 @@ export function TransactionsTable({
               })}
             </div>
 
-            {/* Visão Desktop em Tabela Contábil (>= md) */}
+            {/* Visão Desktop Clean de Ponta a Ponta (>= md): Apenas o Essencial */}
             <div className="hidden overflow-x-auto md:block">
               <table
                 data-testid="transactions-table"
                 className="w-full border-collapse text-left text-sm"
               >
                 <thead>
-                  <tr className="border-b border-[#E4E4E7] bg-[#F4F4F5]/60 text-xs uppercase tracking-wider text-[#71717A] dark:border-[#3F3F46] dark:bg-[#09090B]/40 dark:text-[#D4D4D8]">
-                    <th className="px-6 py-3.5 font-medium">Descrição</th>
-                    <th className="px-6 py-3.5 font-medium">Categoria</th>
-                    <th className="px-6 py-3.5 font-medium">Origem</th>
-                    <th className="px-6 py-3.5 font-medium">Data</th>
-                    <th className="px-6 py-3.5 text-right font-medium">
-                      Valor
-                    </th>
-                    <th className="px-6 py-3.5 text-right font-medium">
-                      Ação
-                    </th>
+                  <tr className="border-b border-[#E4E4E7] bg-[#F8FAFC] text-xs font-semibold text-[#71717A] dark:border-white/10 dark:bg-white/5 dark:text-[#A1A1AA]">
+                    <th className="px-5 py-3">Descrição</th>
+                    <th className="px-5 py-3">Categoria</th>
+                    <th className="px-5 py-3">Data</th>
+                    <th className="px-5 py-3 text-right">Valor</th>
+                    <th className="px-5 py-3 text-right">Ação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E4E4E7] dark:divide-[#3F3F46]">
+                <tbody className="divide-y divide-[#E4E4E7] dark:divide-white/10">
                   {filteredTransactions.map((tx) => {
                     const isIncome = tx.type === "INCOME";
+                    const visual = getCategoryVisual(tx.category, isIncome);
+                    const CatIcon = visual.icon;
+
                     return (
                       <tr
                         key={tx.id}
                         data-testid="transaction-row"
-                        className="transition-colors hover:bg-[#F4F4F5]/75 dark:hover:bg-[#3F3F46]/25"
+                        className="transition-colors hover:bg-[#F8FAFC] dark:hover:bg-white/5"
                       >
-                        <td className="px-6 py-4 font-medium text-[#18181B] dark:text-[#F4F4F5]">
-                          {tx.description}
+                        {/* 1. Descrição + Ícone */}
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${visual.bg}`}
+                            >
+                              <CatIcon className="h-4 w-4" strokeWidth={1.75} />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-[#18181B] dark:text-[#FFFFFF]">
+                                {tx.description}
+                              </span>
+                              {tx.source === "AI_OCR" ? (
+                                <Badge variant="purple" icon={Sparkles}>
+                                  IA
+                                </Badge>
+                              ) : null}
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <Badge variant="neutral" icon={Tag}>
+
+                        {/* 2. Categoria */}
+                        <td className="px-5 py-3.5">
+                          <span className="inline-flex rounded-lg border border-[#E4E4E7] bg-[#F4F4F5]/70 px-2.5 py-1 text-xs font-medium text-[#3F3F46] dark:border-white/10 dark:bg-white/5 dark:text-[#D4D4D8]">
                             {tx.category}
-                          </Badge>
+                          </span>
                         </td>
-                        <td className="px-6 py-4">
-                          {tx.source === "AI_OCR" ? (
-                            <Badge variant="purple" icon={Sparkles}>
-                              IA OCR
-                            </Badge>
-                          ) : (
-                            <Badge variant="info" icon={PenLine}>
-                              Manual
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-xs text-[#71717A] tabular-nums dark:text-[#D4D4D8]">
+
+                        {/* 3. Data */}
+                        <td className="px-5 py-3.5 text-xs text-[#71717A] tabular-nums dark:text-[#A1A1AA]">
                           {tx.transactionDate.split("-").reverse().join("/")}
                         </td>
+
+                        {/* 4. Valor */}
                         <td
-                          className={`px-6 py-4 text-right font-semibold whitespace-nowrap tabular-nums ${
+                          className={`px-5 py-3.5 text-right text-sm font-bold whitespace-nowrap tabular-nums ${
                             isIncome
                               ? "text-[#0CB853] dark:text-[#46C87D]"
-                              : "text-[#DF2929] dark:text-[#EC6862]"
+                              : "text-[#DF2929] dark:text-[#F4948C]"
                           }`}
                         >
                           {isIncome ? "+ " : "- "}
                           {formatCurrencyBRL(tx.amount)}
                         </td>
-                        <td className="px-6 py-4 text-right">
+
+                        {/* 5. Ação */}
+                        <td className="px-5 py-3.5 text-right">
                           <Button
                             type="button"
                             size="sm"
@@ -331,7 +371,7 @@ export function TransactionsTable({
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </GlassPanel>
   );
 }
