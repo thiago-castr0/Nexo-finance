@@ -15,10 +15,12 @@ import {
   Sparkles,
   Trash2,
   Utensils,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrencyBRL } from "@/lib/finance";
+import { exportTransactionsToCSV } from "@/lib/export-csv";
 import type { TransactionRecord } from "@/lib/schemas/transaction";
 
 function formatDateBR(isoDate: string): string {
@@ -116,6 +118,16 @@ export function TimelineFeed({
             onClick={() => setActiveFilter("EXPENSE")}
           >
             Saídas
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="neutral"
+            icon={Download}
+            onClick={() => exportTransactionsToCSV(filtered)}
+            title="Baixar extrato filtrado em CSV"
+          >
+            CSV
           </Button>
         </div>
       </div>
