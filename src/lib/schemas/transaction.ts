@@ -44,6 +44,8 @@ export const transactionInputSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (use o formato AAAA-MM-DD)."),
   attachmentUrl: z.string().url().optional().nullable(),
   source: transactionSourceSchema.default("MANUAL"),
+  isRecurring: z.boolean().default(false).optional(),
+  creditCardId: z.string().uuid().optional().nullable(),
 });
 
 export type TransactionInput = z.infer<typeof transactionInputSchema>;

@@ -183,6 +183,11 @@ export function TimelineFeed({
                           aria-label="Lido por IA"
                         />
                       )}
+                      {tx.isRecurring && (
+                        <span className="rounded-md bg-[#DEC5EF]/40 px-1.5 py-0.5 text-[9px] font-extrabold text-[#692296] dark:bg-[#692296]/30 dark:text-[#DEC5EF]">
+                          Fixa
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs font-medium text-[#3F3F46] dark:text-[#A1A1AA]">
                       {tx.category} • {formatDateBR(tx.transactionDate)}

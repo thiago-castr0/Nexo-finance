@@ -46,6 +46,7 @@ export function ManualEntryModal({
   const [amountStr, setAmountStr] = React.useState("");
   const [transactionDate, setTransactionDate] = React.useState(today);
   const [category, setCategory] = React.useState<CategoryName>("Alimentação");
+  const [isRecurring, setIsRecurring] = React.useState(false);
   const [fieldErrors, setFieldErrors] = React.useState<{
     description?: string;
     amount?: string;
@@ -67,6 +68,7 @@ export function ManualEntryModal({
       type,
       category,
       transactionDate,
+      isRecurring,
       source: "MANUAL",
     };
 
@@ -94,6 +96,7 @@ export function ManualEntryModal({
     onSubmit(validation.data);
     setDescription("");
     setAmountStr("");
+    setIsRecurring(false);
   };
 
   return (
@@ -213,6 +216,23 @@ export function ManualEntryModal({
                 ))}
               </select>
             </div>
+
+            <label className="flex items-center gap-2.5 cursor-pointer select-none rounded-xl border border-[#E4E4E7] p-3 hover:bg-black/5 dark:border-[#3F3F46] dark:hover:bg-white/5 transition-colors">
+              <input
+                type="checkbox"
+                checked={isRecurring}
+                onChange={(e) => setIsRecurring(e.target.checked)}
+                className="h-4 w-4 rounded accent-[#692296]"
+              />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-[#18181B] dark:text-[#FFFFFF]">
+                  Despesa / Receita Recorrente
+                </span>
+                <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">
+                  Repete mensalmente para previsibilidade financeira
+                </span>
+              </div>
+            </label>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <Button

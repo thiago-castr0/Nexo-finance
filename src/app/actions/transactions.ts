@@ -83,6 +83,8 @@ export async function fetchTransactionsAction(): Promise<ActionResponse<Transact
       status: row.status as "DRAFT" | "COMPLETED",
       source: row.source as "MANUAL" | "AI_OCR",
       attachmentUrl: row.attachment_url,
+      isRecurring: Boolean(row.is_recurring),
+      creditCardId: row.credit_card_id || null,
       createdAt: row.created_at,
     }));
 
@@ -271,6 +273,8 @@ export async function createManualTransactionAction(
           status: "COMPLETED",
           transaction_date: record.transactionDate,
           source: "MANUAL",
+          is_recurring: Boolean(record.isRecurring),
+          credit_card_id: record.creditCardId || null,
           user_id: userId || null,
         });
       } catch {
