@@ -7,6 +7,7 @@ import {
   Flame,
   LayoutDashboard,
   ListOrdered,
+  LogOut,
   Palette,
   PieChart,
   Plus,
@@ -23,6 +24,7 @@ import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { DraftReviewPanel } from "@/components/dashboard/draft-review-panel";
 import { ManualEntryModal } from "@/components/dashboard/manual-entry-modal";
 import { FinanceCharts } from "@/components/dashboard/finance-charts";
+import { logoutAction } from "@/app/actions/auth";
 import {
   approveDraftTransactionsAction,
   createManualTransactionAction,
@@ -252,8 +254,8 @@ export function NexoNovaApp() {
             </nav>
           </div>
 
-          {/* Atalho Design System no Rodapé da Sidebar */}
-          <div className="border-t border-[#E4E4E7] pt-4 dark:border-[#27272A]">
+          {/* Rodapé da Sidebar: Design System & Logout */}
+          <div className="space-y-2 border-t border-[#E4E4E7] pt-4 dark:border-[#27272A]">
             <Link href="/design-system" className="block">
               <Button
                 variant="secondary"
@@ -264,6 +266,18 @@ export function NexoNovaApp() {
                 Design System
               </Button>
             </Link>
+
+            <form action={logoutAction}>
+              <Button
+                type="submit"
+                variant="neutral"
+                size="sm"
+                icon={LogOut}
+                className="w-full justify-start text-[#DF2929] hover:bg-[#F9C5BD]/30 hover:border-[#F4948C] dark:text-[#EC6862]"
+              >
+                Sair da Conta
+              </Button>
+            </form>
           </div>
         </aside>
 
