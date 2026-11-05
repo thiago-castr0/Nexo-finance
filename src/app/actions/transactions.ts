@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import {
   draftBatchApprovalSchema,
   transactionInputSchema,
   type TransactionInput,
   type TransactionRecord,
+  type CategoryName,
 } from "@/lib/schemas/transaction";
 import { extractTransactionsFromDocument } from "@/lib/ai/ocr-parser";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -29,6 +31,68 @@ function isSupabaseConfigured(): boolean {
       url.startsWith("https://") &&
       !url.includes("seu-projeto.supabase.co")
   );
+}
+
+async function getAuthUserId(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    if (!token) return null;
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) return null;
+    return data.user.id;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Server Action: Busca todas as transações persistidas no Supabase Cloud.
+ */
+export async function fetchTransactionsAction(): Promise<ActionResponse<TransactionRecord[]>> {
+  if (!isSupabaseConfigured()) {
+    return { success: true, data: [] };
+  }
+
+  try {
+    const userId = await getAuthUserId();
+    const supabase = createServerSupabaseClient();
+
+    let query = supabase
+      .from("transactions")
+      .select("*")
+      .order("transaction_date", { ascending: false });
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    const records: TransactionRecord[] = (data || []).map((row) => ({
+      id: row.id,
+      description: row.description,
+      amount: Number(row.amount),
+      type: row.type as "INCOME" | "EXPENSE",
+      category: (row.category || "Outros") as CategoryName,
+      transactionDate: row.transaction_date,
+      status: row.status as "DRAFT" | "COMPLETED",
+      source: row.source as "MANUAL" | "AI_OCR",
+      attachmentUrl: row.attachment_url,
+      createdAt: row.created_at,
+    }));
+
+    return { success: true, data: records };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro ao carregar transações.",
+    };
+  }
 }
 
 /**
@@ -123,6 +187,7 @@ export async function approveDraftTransactionsAction(
       };
     }
 
+    const userId = await getAuthUserId();
     const nowIso = new Date().toISOString();
     const approvedRecords: TransactionRecord[] = parsed.data.items.map(
       (item) => ({
@@ -143,14 +208,16 @@ export async function approveDraftTransactionsAction(
             description: record.description,
             amount: record.amount,
             type: record.type,
+            category: record.category,
             status: "COMPLETED",
             transaction_date: record.transactionDate,
             attachment_url: record.attachmentUrl ?? null,
             source: "AI_OCR",
+            user_id: userId || null,
           }))
         );
       } catch {
-        // Mantém sincronia otimista caso a tabela remota ainda aguarde migração
+        // Mantém sincronia otimista
       }
     }
 
@@ -183,6 +250,7 @@ export async function createManualTransactionAction(
       };
     }
 
+    const userId = await getAuthUserId();
     const record: TransactionRecord = {
       ...parsed.data,
       id: crypto.randomUUID(),
@@ -199,9 +267,11 @@ export async function createManualTransactionAction(
           description: record.description,
           amount: record.amount,
           type: record.type,
+          category: record.category,
           status: "COMPLETED",
           transaction_date: record.transactionDate,
           source: "MANUAL",
+          user_id: userId || null,
         });
       } catch {
         // Fallback seguro até conexão da nuvem
@@ -218,5 +288,23 @@ export async function createManualTransactionAction(
       success: false,
       error: "Erro ao registrar lançamento manual.",
     };
+  }
+}
+
+/**
+ * Server Action: Exclui uma transação do Supabase Cloud.
+ */
+export async function deleteTransactionAction(
+  id: string
+): Promise<ActionResponse<void>> {
+  try {
+    if (isSupabaseConfigured()) {
+      const supabase = createServerSupabaseClient();
+      await supabase.from("transactions").delete().eq("id", id);
+    }
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Erro ao excluir transação." };
   }
 }

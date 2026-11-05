@@ -32,6 +32,7 @@ import type { CreditCard } from "@/lib/schemas/credit-card";
 import {
   approveDraftTransactionsAction,
   createManualTransactionAction,
+  deleteTransactionAction,
 } from "@/app/actions/transactions";
 import { calculateFinancialSummary } from "@/lib/finance";
 import type {
@@ -124,13 +125,25 @@ const INITIAL_DEMO_CARDS: CreditCard[] = [
   },
 ];
 
-export function NexoNovaApp() {
+export interface NexoNovaAppProps {
+  initialTransactions?: TransactionRecord[];
+  initialCards?: CreditCard[];
+}
+
+export function NexoNovaApp({
+  initialTransactions,
+  initialCards,
+}: NexoNovaAppProps = {}) {
   const [darkMode, setDarkMode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<WorkspaceTab>("OVERVIEW");
   const [transactions, setTransactions] = React.useState<TransactionRecord[]>(
-    INITIAL_NOVA_TRANSACTIONS
+    initialTransactions && initialTransactions.length > 0
+      ? initialTransactions
+      : INITIAL_NOVA_TRANSACTIONS
   );
-  const [creditCards] = React.useState<CreditCard[]>(INITIAL_DEMO_CARDS);
+  const [creditCards, setCreditCards] = React.useState<CreditCard[]>(
+    initialCards && initialCards.length > 0 ? initialCards : INITIAL_DEMO_CARDS
+  );
   const [draftItems, setDraftItems] = React.useState<TransactionInput[] | null>(
     null
   );
@@ -215,8 +228,9 @@ export function NexoNovaApp() {
     });
   }
 
-  function handleDeleteTransaction(id: string) {
+  async function handleDeleteTransaction(id: string) {
     setTransactions((prev) => prev.filter((item) => item.id !== id));
+    await deleteTransactionAction(id);
   }
 
   const navItems: {
@@ -441,7 +455,7 @@ export function NexoNovaApp() {
 
             {/* ABA 3: CARTÕES DE CRÉDITO */}
             {activeTab === "CARDS" && (
-              <CreditCardManager cards={creditCards} />
+              <CreditCardManager cards={creditCards} onCardsChange={setCreditCards} />
             )}
 
             {/* ABA 4: IMPORTAR IA */}
