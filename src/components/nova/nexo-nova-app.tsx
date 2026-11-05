@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
+  CreditCard as CreditCardIcon,
   Flame,
   LayoutDashboard,
   ListOrdered,
@@ -21,10 +22,12 @@ import { WalletHeroCard } from "@/components/nova-ui/wallet-hero-card";
 import { TimelineFeed } from "@/components/nova-ui/timeline-feed";
 import { CategoryEnvelopes } from "@/components/nova-ui/category-envelopes";
 import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
+import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
 import { DraftReviewPanel } from "@/components/dashboard/draft-review-panel";
 import { ManualEntryModal } from "@/components/dashboard/manual-entry-modal";
 import { FinanceCharts } from "@/components/dashboard/finance-charts";
 import { logoutAction } from "@/app/actions/auth";
+import type { CreditCard } from "@/lib/schemas/credit-card";
 import {
   approveDraftTransactionsAction,
   createManualTransactionAction,
@@ -93,7 +96,32 @@ const INITIAL_NOVA_TRANSACTIONS: TransactionRecord[] = [
   },
 ];
 
-type WorkspaceTab = "OVERVIEW" | "TIMELINE" | "SCANNER" | "ENVELOPES";
+type WorkspaceTab = "OVERVIEW" | "TIMELINE" | "CARDS" | "SCANNER" | "ENVELOPES";
+
+const INITIAL_DEMO_CARDS: CreditCard[] = [
+  {
+    id: "card-1",
+    name: "Nubank Ultravioleta",
+    lastDigits: "8842",
+    brand: "Mastercard",
+    color: "#692296",
+    creditLimit: 12000,
+    currentInvoice: 2650.4,
+    closingDay: 18,
+    dueDay: 25,
+  },
+  {
+    id: "card-2",
+    name: "Itaú Personnalité Black",
+    lastDigits: "1093",
+    brand: "Visa",
+    color: "#DC2626",
+    creditLimit: 25000,
+    currentInvoice: 4120.0,
+    closingDay: 5,
+    dueDay: 12,
+  },
+];
 
 export function NexoNovaApp() {
   const [darkMode, setDarkMode] = React.useState(false);
@@ -101,6 +129,7 @@ export function NexoNovaApp() {
   const [transactions, setTransactions] = React.useState<TransactionRecord[]>(
     INITIAL_NOVA_TRANSACTIONS
   );
+  const [creditCards] = React.useState<CreditCard[]>(INITIAL_DEMO_CARDS);
   const [draftItems, setDraftItems] = React.useState<TransactionInput[] | null>(
     null
   );
@@ -180,6 +209,7 @@ export function NexoNovaApp() {
   }[] = [
     { id: "OVERVIEW", label: "Início", icon: LayoutDashboard },
     { id: "TIMELINE", label: "Extrato", icon: ListOrdered },
+    { id: "CARDS", label: "Cartões", icon: CreditCardIcon },
     { id: "SCANNER", label: "Importar IA", icon: ScanLine },
     { id: "ENVELOPES", label: "Categorias", icon: PieChart },
   ];
@@ -295,6 +325,7 @@ export function NexoNovaApp() {
                 <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-[#18181B] dark:text-[#FFFFFF]">
                   {activeTab === "OVERVIEW" && "Minha Carteira"}
                   {activeTab === "TIMELINE" && "Extrato"}
+                  {activeTab === "CARDS" && "Cartões de Crédito"}
                   {activeTab === "SCANNER" && "Importar com IA"}
                   {activeTab === "ENVELOPES" && "Gastos por Categoria"}
                 </h1>
@@ -383,14 +414,19 @@ export function NexoNovaApp() {
               />
             )}
 
-            {/* ABA 3: IMPORTAR IA */}
+            {/* ABA 3: CARTÕES DE CRÉDITO */}
+            {activeTab === "CARDS" && (
+              <CreditCardManager cards={creditCards} />
+            )}
+
+            {/* ABA 4: IMPORTAR IA */}
             {activeTab === "SCANNER" && (
               <div className="mx-auto max-w-xl">
                 <QuickAiScanner onDraftExtracted={handleDraftExtracted} />
               </div>
             )}
 
-            {/* ABA 4: CATEGORIAS */}
+            {/* ABA 5: CATEGORIAS */}
             {activeTab === "ENVELOPES" && (
               <div className="space-y-5">
                 <CategoryEnvelopes transactions={transactions} />
