@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:3001": "next dev -p 3001",
-    "dev:compare": "node scripts/dual-port-runner.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

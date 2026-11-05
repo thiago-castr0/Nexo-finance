@@ -4,12 +4,10 @@ import * as React from "react";
 import {
   AlertCircle,
   FileUp,
-  Plus,
   Sparkles,
   UploadCloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { processSmartInputAction } from "@/app/actions/transactions";
 import type { TransactionInput } from "@/lib/schemas/transaction";
 
@@ -19,12 +17,11 @@ export interface QuickAiScannerProps {
     fileName: string,
     mode?: "GEMINI_API" | "SMART_SIMULATION"
   ) => void;
-  onOpenManualModal: () => void;
+  onOpenManualModal?: () => void;
 }
 
 export function QuickAiScanner({
   onDraftExtracted,
-  onOpenManualModal,
 }: QuickAiScannerProps) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
@@ -51,34 +48,24 @@ export function QuickAiScanner({
     const pdfHeader = new Uint8Array([
       0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37,
     ]);
-    const mockFile = new File([pdfHeader], "fatura-cartao-novembro.pdf", {
+    const mockFile = new File([pdfHeader], "comprovante-novembro.pdf", {
       type: "application/pdf",
     });
     processFile(mockFile);
   }
 
   return (
-    <div className="rounded-3xl border border-[#E4E4E7] bg-white p-5 sm:p-6 shadow-2xs dark:border-[#27272A] dark:bg-[#141418] space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#692296] to-[#DC2626] text-white">
-            <Sparkles className="h-4 w-4" strokeWidth={1.75} />
-          </div>
-          <div>
-            <h3 className="text-base font-extrabold text-[#18181B] dark:text-[#FFFFFF]">
-              Scanner IA de Comprovantes
-            </h3>
-            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
-              Extraia notas, recibos PIX ou faturas PDF
-            </p>
-          </div>
+    <div className="rounded-3xl border border-[#E4E4E7] bg-white/88 p-5 sm:p-6 text-[#18181B] backdrop-blur-2xl shadow-[0_10px_30px_-10px_rgba(105,34,150,0.08)] dark:border-[#27272A] dark:bg-[#18181B]/90 dark:text-[#F4F4F5] space-y-4">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#692296] to-[#DC2626] text-white">
+          <Sparkles className="h-4 w-4" strokeWidth={1.75} />
         </div>
-        <Badge variant="purple" icon={Sparkles}>
-          Automático
-        </Badge>
+        <h3 className="text-base font-extrabold text-[#18181B] dark:text-[#FFFFFF]">
+          Importar Recibo com IA
+        </h3>
       </div>
 
-      {/* Dropzone Tátil Compacto */}
+      {/* Área de Upload Limpa com Contraste Nítido */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -100,10 +87,10 @@ export function QuickAiScanner({
             fileInputRef.current?.click();
           }
         }}
-        className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-5 text-center transition cursor-pointer ${
+        className={`flex flex-col items-center justify-center rounded-2xl border border-dashed p-5 text-center transition cursor-pointer ${
           isDragging
-            ? "border-[#692296] bg-[#DEC5EF]/25"
-            : "border-[#D4D4D8] bg-[#F8FAFC] hover:border-[#692296] dark:border-[#3F3F46] dark:bg-[#0D0D11]"
+            ? "border-[#692296] bg-[#DEC5EF]/30"
+            : "border-[#D4D4D8] bg-[#F8FAFC] hover:border-[#692296] dark:border-[#3F3F46] dark:bg-[#121216]"
         }`}
       >
         <input
@@ -118,14 +105,9 @@ export function QuickAiScanner({
           }}
         />
 
-        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#DEC5EF]/45 text-[#692296] dark:bg-[#692296]/25 dark:text-[#C59BE3]">
-          <UploadCloud className="h-5 w-5" strokeWidth={1.75} />
-        </div>
+        <UploadCloud className="mb-2 h-6 w-6 text-[#692296] dark:text-[#C59BE3]" strokeWidth={1.75} />
         <p className="text-xs font-bold text-[#18181B] dark:text-[#FFFFFF]">
-          Solte seu arquivo aqui ou clique para enviar
-        </p>
-        <p className="mt-0.5 text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
-          PDF, PNG, JPG ou WEBP (até 5 MB)
+          Solte sua nota ou fatura PDF aqui
         </p>
 
         <div
@@ -140,7 +122,7 @@ export function QuickAiScanner({
             isLoading={isPending}
             onClick={() => fileInputRef.current?.click()}
           >
-            Escolher Arquivo
+            Enviar Arquivo
           </Button>
           <Button
             type="button"
@@ -150,7 +132,7 @@ export function QuickAiScanner({
             disabled={isPending}
             onClick={handleSimulateOneClick}
           >
-            Testar Exemplo IA
+            Testar IA
           </Button>
         </div>
       </div>
@@ -158,28 +140,12 @@ export function QuickAiScanner({
       {errorMsg && (
         <div
           role="alert"
-          className="flex items-center gap-2 rounded-xl border border-[#DF2929] bg-[#F9C5BD]/30 p-3 text-xs font-medium text-[#18181B] dark:text-[#F4F4F5]"
+          className="flex items-center gap-2 rounded-xl border border-[#DF2929] bg-[#F9C5BD]/40 p-3 text-xs font-bold text-[#18181B] dark:text-[#FFFFFF]"
         >
           <AlertCircle className="h-4 w-4 shrink-0 text-[#DF2929]" />
           <span>{errorMsg}</span>
         </div>
       )}
-
-      {/* Rodapé de Entrada Manual Rápida */}
-      <div className="flex items-center justify-between rounded-2xl border border-[#E4E4E7] bg-[#F8FAFC] px-4 py-3 dark:border-[#27272A] dark:bg-[#0D0D11]">
-        <span className="text-xs font-semibold text-[#3F3F46] dark:text-[#D4D4D8]">
-          Prefere digitar uma despesa avulsa?
-        </span>
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          icon={Plus}
-          onClick={onOpenManualModal}
-        >
-          Digitar
-        </Button>
-      </div>
     </div>
   );
 }
