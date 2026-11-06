@@ -85,6 +85,8 @@ export async function fetchTransactionsAction(): Promise<ActionResponse<Transact
       attachmentUrl: row.attachment_url,
       isRecurring: Boolean(row.is_recurring),
       creditCardId: row.credit_card_id || null,
+      installmentNumber: row.installment_number || null,
+      totalInstallments: row.total_installments || null,
       createdAt: row.created_at,
     }));
 
@@ -236,12 +238,29 @@ export async function approveDraftTransactionsAction(
   }
 }
 
+function addMonthsToDate(isoDate: string, monthsToAdd: number): string {
+  const [yearStr, monthStr, dayStr] = isoDate.split("-");
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10) - 1;
+  const day = parseInt(dayStr, 10);
+
+  const targetDate = new Date(year, month + monthsToAdd, 1);
+  const targetYear = targetDate.getFullYear();
+  const targetMonth = targetDate.getMonth() + 1;
+
+  const daysInTargetMonth = new Date(targetYear, targetMonth, 0).getDate();
+  const validDay = Math.min(day, daysInTargetMonth);
+
+  return `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(validDay).padStart(2, "0")}`;
+}
+
 /**
  * Server Action: Cria uma transação manual validada estritamente com Zod (Skill BKE-002 & BKE-004).
+ * Suporta parcelamento de compras (1x a 72x) com projeção automática nos meses subsequentes.
  */
 export async function createManualTransactionAction(
   input: TransactionInput
-): Promise<ActionResponse<TransactionRecord>> {
+): Promise<ActionResponse<TransactionRecord[]>> {
   try {
     const parsed = transactionInputSchema.safeParse(input);
     if (!parsed.success) {
@@ -253,30 +272,67 @@ export async function createManualTransactionAction(
     }
 
     const userId = await getAuthUserId();
-    const record: TransactionRecord = {
-      ...parsed.data,
-      id: crypto.randomUUID(),
-      status: "COMPLETED",
-      source: "MANUAL",
-      createdAt: new Date().toISOString(),
-    };
+    const nowIso = new Date().toISOString();
+    const totalInstallments = parsed.data.totalInstallments || 1;
+    const recordsToInsert: TransactionRecord[] = [];
+
+    if (totalInstallments > 1 && parsed.data.type === "EXPENSE") {
+      const totalAmount = parsed.data.amount;
+      const amountPerInstallment = Math.round((totalAmount / totalInstallments) * 100) / 100;
+      const firstInstallmentAmount =
+        Math.round((totalAmount - amountPerInstallment * (totalInstallments - 1)) * 100) / 100;
+
+      for (let i = 1; i <= totalInstallments; i++) {
+        const installmentDate = addMonthsToDate(parsed.data.transactionDate, i - 1);
+        const installmentAmount = i === 1 ? firstInstallmentAmount : amountPerInstallment;
+        const parcelSuffix = ` (${String(i).padStart(2, "0")}/${String(totalInstallments).padStart(2, "0")})`;
+
+        recordsToInsert.push({
+          ...parsed.data,
+          id: crypto.randomUUID(),
+          description: `${parsed.data.description}${parcelSuffix}`,
+          amount: installmentAmount,
+          transactionDate: installmentDate,
+          installmentNumber: i,
+          totalInstallments,
+          isRecurring: false,
+          status: "COMPLETED",
+          source: "MANUAL",
+          createdAt: nowIso,
+        });
+      }
+    } else {
+      recordsToInsert.push({
+        ...parsed.data,
+        id: crypto.randomUUID(),
+        status: "COMPLETED",
+        source: "MANUAL",
+        installmentNumber: null,
+        totalInstallments: null,
+        createdAt: nowIso,
+      });
+    }
 
     if (isSupabaseConfigured()) {
       try {
         const supabase = createServerSupabaseClient();
-        await supabase.from("transactions").insert({
-          id: record.id,
-          description: record.description,
-          amount: record.amount,
-          type: record.type,
-          category: record.category,
-          status: "COMPLETED",
-          transaction_date: record.transactionDate,
-          source: "MANUAL",
-          is_recurring: Boolean(record.isRecurring),
-          credit_card_id: record.creditCardId || null,
-          user_id: userId || null,
-        });
+        await supabase.from("transactions").insert(
+          recordsToInsert.map((rec) => ({
+            id: rec.id,
+            description: rec.description,
+            amount: rec.amount,
+            type: rec.type,
+            category: rec.category,
+            status: "COMPLETED",
+            transaction_date: rec.transactionDate,
+            source: "MANUAL",
+            is_recurring: Boolean(rec.isRecurring),
+            credit_card_id: rec.creditCardId || null,
+            installment_number: rec.installmentNumber || null,
+            total_installments: rec.totalInstallments || null,
+            user_id: userId || null,
+          }))
+        );
       } catch {
         // Fallback seguro até conexão da nuvem
       }
@@ -285,7 +341,7 @@ export async function createManualTransactionAction(
     revalidatePath("/");
     return {
       success: true,
-      data: record,
+      data: recordsToInsert,
     };
   } catch {
     return {
@@ -349,6 +405,8 @@ export async function updateTransactionAction(
           transaction_date: updatedRecord.transactionDate,
           is_recurring: Boolean(updatedRecord.isRecurring),
           credit_card_id: updatedRecord.creditCardId || null,
+          installment_number: updatedRecord.installmentNumber || null,
+          total_installments: updatedRecord.totalInstallments || null,
         })
         .eq("id", id);
 

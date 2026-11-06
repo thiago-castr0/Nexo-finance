@@ -46,6 +46,8 @@ export const transactionInputSchema = z.object({
   source: transactionSourceSchema.default("MANUAL"),
   isRecurring: z.boolean().default(false).optional(),
   creditCardId: z.string().uuid().optional().nullable(),
+  installmentNumber: z.number().int().positive().optional().nullable(),
+  totalInstallments: z.number().int().min(1).max(72).optional().nullable(),
 });
 
 export type TransactionInput = z.infer<typeof transactionInputSchema>;

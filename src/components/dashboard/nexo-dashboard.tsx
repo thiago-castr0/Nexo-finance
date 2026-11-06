@@ -141,11 +141,9 @@ export function NexoDashboard() {
     startManualTransition(async () => {
       const response = await createManualTransactionAction(input);
       if (response.success && response.data) {
-        setTransactions((prev) => [response.data!, ...prev]);
+        setTransactions((prev) => [...response.data!, ...prev]);
         setIsManualModalOpen(false);
-        setFeedbackBanner(
-          `Lançamento "${response.data.description}" adicionado!`
-        );
+        setFeedbackBanner("Lançamento adicionado com sucesso!");
       }
     });
   };

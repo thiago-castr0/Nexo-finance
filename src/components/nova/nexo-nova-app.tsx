@@ -210,9 +210,24 @@ export function NexoNovaApp({
     return combined.sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
   }, [transactions, selectedDate]);
 
+  const dynamicCreditCards = React.useMemo(() => {
+    return creditCards.map((card) => {
+      const cardExpensesThisMonth = monthFilteredTransactions
+        .filter((tx) => tx.type === "EXPENSE" && tx.creditCardId === card.id)
+        .reduce((acc, tx) => acc + tx.amount, 0);
+
+      const invoice = cardExpensesThisMonth > 0 ? cardExpensesThisMonth : card.currentInvoice;
+
+      return {
+        ...card,
+        currentInvoice: invoice,
+      };
+    });
+  }, [creditCards, monthFilteredTransactions]);
+
   const creditCardTotal = React.useMemo(() => {
-    return creditCards.reduce((acc, card) => acc + card.currentInvoice, 0);
-  }, [creditCards]);
+    return dynamicCreditCards.reduce((acc, card) => acc + card.currentInvoice, 0);
+  }, [dynamicCreditCards]);
 
   const summary = React.useMemo(
     () => calculateFinancialSummary(monthFilteredTransactions),
@@ -264,9 +279,13 @@ export function NexoNovaApp({
       } else {
         const result = await createManualTransactionAction(input);
         if (result.success && result.data) {
-          setTransactions((prev) => [result.data!, ...prev]);
+          setTransactions((prev) => [...result.data!, ...prev]);
           setIsManualModalOpen(false);
-          setFeedbackBanner("Lançamento salvo!");
+          setFeedbackBanner(
+            result.data.length > 1
+              ? `${result.data.length} parcelas registradas com sucesso!`
+              : "Lançamento salvo com sucesso!"
+          );
         } else {
           setFeedbackBanner(result.error || "Erro ao salvar lançamento.");
         }
@@ -511,7 +530,7 @@ export function NexoNovaApp({
 
             {/* ABA 3: CARTÕES DE CRÉDITO */}
             {activeTab === "CARDS" && (
-              <CreditCardManager cards={creditCards} onCardsChange={setCreditCards} />
+              <CreditCardManager cards={dynamicCreditCards} onCardsChange={setCreditCards} />
             )}
 
             {/* ABA 4: IMPORTAR IA */}
@@ -570,6 +589,7 @@ export function NexoNovaApp({
         isOpen={isManualModalOpen}
         isSubmitting={isSubmittingManual}
         initialData={editingTransaction}
+        creditCards={creditCards}
         onClose={() => {
           setIsManualModalOpen(false);
           setEditingTransaction(null);

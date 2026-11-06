@@ -191,6 +191,11 @@ export function TimelineFeed({
                           Fixa
                         </span>
                       )}
+                      {tx.totalInstallments && tx.totalInstallments > 1 && (
+                        <span className="rounded-md bg-[#BCD6F2]/40 px-1.5 py-0.5 text-[9px] font-extrabold text-[#2572CE] dark:bg-[#2572CE]/20 dark:text-[#BCD6F2]">
+                          {tx.installmentNumber}/{tx.totalInstallments}x
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs font-medium text-[#3F3F46] dark:text-[#A1A1AA]">
                       {tx.category} • {formatDateBR(tx.transactionDate)}
