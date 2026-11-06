@@ -25,6 +25,7 @@ import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
 import { MonthSelector } from "@/components/nova-ui/month-selector";
 import { FinancialInsightsScore } from "@/components/nova-ui/financial-insights-score";
+import { CashFlowChart } from "@/components/nova-ui/cash-flow-chart";
 import { DraftReviewPanel } from "@/components/dashboard/draft-review-panel";
 import { ManualEntryModal } from "@/components/dashboard/manual-entry-modal";
 import { logoutAction } from "@/app/actions/auth";
@@ -495,6 +496,12 @@ export function NexoNovaApp({
                   totalExpenses={summary.totalExpense}
                 />
 
+                <CashFlowChart
+                  transactions={monthFilteredTransactions}
+                  allTransactions={transactions}
+                  selectedDate={selectedDate}
+                />
+
                 <FinancialInsightsScore
                   transactions={monthFilteredTransactions}
                   totalIncome={summary.totalIncome}
@@ -543,6 +550,11 @@ export function NexoNovaApp({
             {/* ABA 5: CATEGORIAS */}
             {activeTab === "ENVELOPES" && (
               <div className="space-y-5">
+                <CashFlowChart
+                  transactions={monthFilteredTransactions}
+                  allTransactions={transactions}
+                  selectedDate={selectedDate}
+                />
                 <CategoryEnvelopes transactions={monthFilteredTransactions} />
                 <FinancialInsightsScore
                   transactions={monthFilteredTransactions}
