@@ -16,6 +16,7 @@ import {
   Trash2,
   Utensils,
   Download,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ function formatDateBR(isoDate: string): string {
 export interface TimelineFeedProps {
   transactions: TransactionRecord[];
   onDeleteTransaction: (id: string) => void;
+  onEditTransaction?: (transaction: TransactionRecord) => void;
 }
 
 type QuickFilter = "ALL" | "INCOME" | "EXPENSE";
@@ -62,6 +64,7 @@ function getCategoryIcon(category: string, type: "INCOME" | "EXPENSE") {
 export function TimelineFeed({
   transactions,
   onDeleteTransaction,
+  onEditTransaction,
 }: TimelineFeedProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activeFilter, setActiveFilter] = React.useState<QuickFilter>("ALL");
@@ -206,14 +209,29 @@ export function TimelineFeed({
                     {isIncome ? "+" : "-"} {formatCurrencyBRL(tx.amount)}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={() => onDeleteTransaction(tx.id)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-[#3F3F46] transition hover:bg-[#F9C5BD]/50 hover:text-[#DF2929] dark:text-[#A1A1AA] dark:hover:bg-[#DF2929]/20 cursor-pointer"
-                    aria-label={`Excluir ${tx.description}`}
-                  >
-                    <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {onEditTransaction && (
+                      <button
+                        type="button"
+                        onClick={() => onEditTransaction(tx)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-[#3F3F46] transition hover:bg-[#DEC5EF]/40 hover:text-[#692296] dark:text-[#A1A1AA] dark:hover:bg-[#692296]/20 dark:hover:text-[#DEC5EF] cursor-pointer"
+                        title="Editar lançamento"
+                        aria-label={`Editar ${tx.description}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => onDeleteTransaction(tx.id)}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-[#3F3F46] transition hover:bg-[#F9C5BD]/50 hover:text-[#DF2929] dark:text-[#A1A1AA] dark:hover:bg-[#DF2929]/20 cursor-pointer"
+                      title="Excluir lançamento"
+                      aria-label={`Excluir ${tx.description}`}
+                    >
+                      <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

@@ -312,3 +312,57 @@ export async function deleteTransactionAction(
     return { success: false, error: "Erro ao excluir transação." };
   }
 }
+
+/**
+ * Server Action: Atualiza uma transação existente no Supabase Cloud.
+ */
+export async function updateTransactionAction(
+  id: string,
+  input: TransactionInput
+): Promise<ActionResponse<TransactionRecord>> {
+  try {
+    const parsed = transactionInputSchema.safeParse(input);
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0]?.message;
+      return {
+        success: false,
+        error: firstIssue || "Dados inválidos para atualização.",
+      };
+    }
+
+    const updatedRecord: TransactionRecord = {
+      ...parsed.data,
+      id,
+      status: "COMPLETED",
+      createdAt: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured()) {
+      const supabase = createServerSupabaseClient();
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          description: updatedRecord.description,
+          amount: updatedRecord.amount,
+          type: updatedRecord.type,
+          category: updatedRecord.category,
+          transaction_date: updatedRecord.transactionDate,
+          is_recurring: Boolean(updatedRecord.isRecurring),
+          credit_card_id: updatedRecord.creditCardId || null,
+        })
+        .eq("id", id);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+    }
+
+    revalidatePath("/");
+    return { success: true, data: updatedRecord };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Erro ao atualizar lançamento.",
+    };
+  }
+}

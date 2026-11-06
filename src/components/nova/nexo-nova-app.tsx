@@ -33,6 +33,7 @@ import {
   approveDraftTransactionsAction,
   createManualTransactionAction,
   deleteTransactionAction,
+  updateTransactionAction,
 } from "@/app/actions/transactions";
 import { calculateFinancialSummary } from "@/lib/finance";
 import type {
@@ -50,6 +51,7 @@ const INITIAL_NOVA_TRANSACTIONS: TransactionRecord[] = [
     transactionDate: "2026-11-01",
     status: "COMPLETED",
     source: "MANUAL",
+    isRecurring: true,
     createdAt: "2026-11-01T09:00:00.000Z",
   },
   {
@@ -61,6 +63,7 @@ const INITIAL_NOVA_TRANSACTIONS: TransactionRecord[] = [
     transactionDate: "2026-11-02",
     status: "COMPLETED",
     source: "AI_OCR",
+    isRecurring: true,
     createdAt: "2026-11-02T10:30:00.000Z",
   },
   {
@@ -152,6 +155,7 @@ export function NexoNovaApp({
     "GEMINI_API" | "SMART_SIMULATION" | undefined
   >(undefined);
   const [isManualModalOpen, setIsManualModalOpen] = React.useState(false);
+  const [editingTransaction, setEditingTransaction] = React.useState<TransactionRecord | null>(null);
   const [feedbackBanner, setFeedbackBanner] = React.useState<string | null>(
     null
   );
@@ -175,9 +179,35 @@ export function NexoNovaApp({
     const targetMonth = selectedDate.getMonth() + 1;
     const prefix = `${targetYear}-${String(targetMonth).padStart(2, "0")}`;
 
-    const filtered = transactions.filter((tx) => tx.transactionDate.startsWith(prefix));
-    // Se o mês selecionado não tiver lançamentos cadastrados, exibe todos para não ficar vazio
-    return filtered.length > 0 ? filtered : transactions;
+    // 1. Transações reais registradas para este mês
+    const realInMonth = transactions.filter((tx) =>
+      tx.transactionDate.startsWith(prefix)
+    );
+
+    // 2. Transações recorrentes que devem ser projetadas para este mês
+    const projectedRecurring: TransactionRecord[] = [];
+    const recurringSources = transactions.filter((tx) => tx.isRecurring);
+
+    for (const rec of recurringSources) {
+      const alreadyHas = realInMonth.some(
+        (tx) => tx.description.toLowerCase() === rec.description.toLowerCase()
+      );
+      if (!alreadyHas) {
+        const originalDay = rec.transactionDate.split("-")[2] || "01";
+        projectedRecurring.push({
+          ...rec,
+          id: `proj-${rec.id}-${prefix}`,
+          transactionDate: `${prefix}-${originalDay}`,
+          status: "COMPLETED",
+        });
+      }
+    }
+
+    const combined = [...realInMonth, ...projectedRecurring];
+    if (combined.length === 0) {
+      return transactions;
+    }
+    return combined.sort((a, b) => b.transactionDate.localeCompare(a.transactionDate));
   }, [transactions, selectedDate]);
 
   const creditCardTotal = React.useMemo(() => {
@@ -219,13 +249,34 @@ export function NexoNovaApp({
 
   function handleManualSubmit(input: TransactionInput) {
     startManualTransition(async () => {
-      const result = await createManualTransactionAction(input);
-      if (result.success && result.data) {
-        setTransactions((prev) => [result.data!, ...prev]);
-        setIsManualModalOpen(false);
-        setFeedbackBanner("Lançamento salvo!");
+      if (editingTransaction) {
+        const result = await updateTransactionAction(editingTransaction.id, input);
+        if (result.success && result.data) {
+          setTransactions((prev) =>
+            prev.map((item) => (item.id === editingTransaction.id ? result.data! : item))
+          );
+          setIsManualModalOpen(false);
+          setEditingTransaction(null);
+          setFeedbackBanner("Lançamento atualizado com sucesso!");
+        } else {
+          setFeedbackBanner(result.error || "Erro ao atualizar lançamento.");
+        }
+      } else {
+        const result = await createManualTransactionAction(input);
+        if (result.success && result.data) {
+          setTransactions((prev) => [result.data!, ...prev]);
+          setIsManualModalOpen(false);
+          setFeedbackBanner("Lançamento salvo!");
+        } else {
+          setFeedbackBanner(result.error || "Erro ao salvar lançamento.");
+        }
       }
     });
+  }
+
+  function handleEditTransaction(transaction: TransactionRecord) {
+    setEditingTransaction(transaction);
+    setIsManualModalOpen(true);
   }
 
   async function handleDeleteTransaction(id: string) {
@@ -377,7 +428,10 @@ export function NexoNovaApp({
                   variant="primary"
                   size="sm"
                   icon={Plus}
-                  onClick={() => setIsManualModalOpen(true)}
+                  onClick={() => {
+                    setEditingTransaction(null);
+                    setIsManualModalOpen(true);
+                  }}
                 >
                   Novo Gasto
                 </Button>
@@ -434,6 +488,7 @@ export function NexoNovaApp({
                     <TimelineFeed
                       transactions={monthFilteredTransactions}
                       onDeleteTransaction={handleDeleteTransaction}
+                      onEditTransaction={handleEditTransaction}
                     />
                   </div>
 
@@ -450,6 +505,7 @@ export function NexoNovaApp({
               <TimelineFeed
                 transactions={monthFilteredTransactions}
                 onDeleteTransaction={handleDeleteTransaction}
+                onEditTransaction={handleEditTransaction}
               />
             )}
 
@@ -510,9 +566,14 @@ export function NexoNovaApp({
       </div>
 
       <ManualEntryModal
+        key={editingTransaction ? editingTransaction.id : "new"}
         isOpen={isManualModalOpen}
         isSubmitting={isSubmittingManual}
-        onClose={() => setIsManualModalOpen(false)}
+        initialData={editingTransaction}
+        onClose={() => {
+          setIsManualModalOpen(false);
+          setEditingTransaction(null);
+        }}
         onSubmit={handleManualSubmit}
       />
     </div>

@@ -24,6 +24,7 @@ import {
   transactionInputSchema,
   type CategoryName,
   type TransactionInput,
+  type TransactionRecord,
   type TransactionType,
 } from "@/lib/schemas/transaction";
 
@@ -32,6 +33,7 @@ interface ManualEntryModalProps {
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (data: TransactionInput) => void;
+  initialData?: TransactionRecord | null;
 }
 
 export function ManualEntryModal({
@@ -39,14 +41,15 @@ export function ManualEntryModal({
   isSubmitting,
   onClose,
   onSubmit,
+  initialData,
 }: ManualEntryModalProps) {
   const today = React.useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const [type, setType] = React.useState<TransactionType>("EXPENSE");
-  const [description, setDescription] = React.useState("");
-  const [amountStr, setAmountStr] = React.useState("");
-  const [transactionDate, setTransactionDate] = React.useState(today);
-  const [category, setCategory] = React.useState<CategoryName>("Alimentação");
-  const [isRecurring, setIsRecurring] = React.useState(false);
+  const [type, setType] = React.useState<TransactionType>(initialData?.type || "EXPENSE");
+  const [description, setDescription] = React.useState(initialData?.description || "");
+  const [amountStr, setAmountStr] = React.useState(initialData ? String(initialData.amount) : "");
+  const [transactionDate, setTransactionDate] = React.useState(initialData?.transactionDate || today);
+  const [category, setCategory] = React.useState<CategoryName>((initialData?.category as CategoryName) || "Alimentação");
+  const [isRecurring, setIsRecurring] = React.useState(Boolean(initialData?.isRecurring));
   const [fieldErrors, setFieldErrors] = React.useState<{
     description?: string;
     amount?: string;
@@ -116,10 +119,12 @@ export function ManualEntryModal({
         <CardHeader className="flex flex-row items-start justify-between space-y-0 border-b border-[#E4E4E7] pb-4 dark:border-[#3F3F46]">
           <div>
             <CardTitle id="manual-entry-title" className="text-base">
-              Novo Lançamento Manual
+              {initialData ? "Editar Lançamento" : "Novo Lançamento Manual"}
             </CardTitle>
             <CardDescription>
-              Formulário otimizado para navegação rápida via teclado (Tab)
+              {initialData
+                ? "Atualize os dados e confirme para sincronizar com sua carteira"
+                : "Formulário otimizado para navegação rápida via teclado (Tab)"}
             </CardDescription>
           </div>
           <Button
@@ -251,7 +256,7 @@ export function ManualEntryModal({
                 loadingText="Salvando..."
                 data-testid="manual-submit-btn"
               >
-                Salvar Lançamento
+                {initialData ? "Salvar Alterações" : "Salvar Lançamento"}
               </Button>
             </div>
           </form>
