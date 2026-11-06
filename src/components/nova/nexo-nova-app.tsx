@@ -13,6 +13,7 @@ import {
   PieChart,
   Plus,
   ScanLine,
+  Target,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import { TimelineFeed } from "@/components/nova-ui/timeline-feed";
 import { CategoryEnvelopes } from "@/components/nova-ui/category-envelopes";
 import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
+import { SavingsGoalsManager } from "@/components/nova-ui/savings-goals-manager";
 import { MonthSelector } from "@/components/nova-ui/month-selector";
 import { FinancialInsightsScore } from "@/components/nova-ui/financial-insights-score";
 import { CashFlowChart } from "@/components/nova-ui/cash-flow-chart";
@@ -30,6 +32,7 @@ import { DraftReviewPanel } from "@/components/dashboard/draft-review-panel";
 import { ManualEntryModal } from "@/components/dashboard/manual-entry-modal";
 import { logoutAction } from "@/app/actions/auth";
 import type { CreditCard } from "@/lib/schemas/credit-card";
+import type { SavingsGoal } from "@/lib/schemas/savings-goal";
 import {
   approveDraftTransactionsAction,
   createManualTransactionAction,
@@ -102,7 +105,43 @@ const INITIAL_NOVA_TRANSACTIONS: TransactionRecord[] = [
   },
 ];
 
-type WorkspaceTab = "OVERVIEW" | "TIMELINE" | "CARDS" | "SCANNER" | "ENVELOPES";
+type WorkspaceTab =
+  | "OVERVIEW"
+  | "TIMELINE"
+  | "CARDS"
+  | "GOALS"
+  | "SCANNER"
+  | "ENVELOPES";
+
+const INITIAL_DEMO_GOALS: SavingsGoal[] = [
+  {
+    id: "goal-1",
+    name: "Reserva de Emergência (6 Meses)",
+    targetAmount: 30000,
+    currentAmount: 18500,
+    category: "Reserva de Emergência",
+    targetDate: "2027-06-30",
+    color: "#0CB853",
+  },
+  {
+    id: "goal-2",
+    name: "Férias no Japão",
+    targetAmount: 25000,
+    currentAmount: 8200,
+    category: "Viagem & Férias",
+    targetDate: "2027-10-15",
+    color: "#692296",
+  },
+  {
+    id: "goal-3",
+    name: "Troca do Notebook Profissional",
+    targetAmount: 12000,
+    currentAmount: 7500,
+    category: "Tecnologia",
+    targetDate: "2027-03-31",
+    color: "#DC2626",
+  },
+];
 
 const INITIAL_DEMO_CARDS: CreditCard[] = [
   {
@@ -132,11 +171,13 @@ const INITIAL_DEMO_CARDS: CreditCard[] = [
 export interface NexoNovaAppProps {
   initialTransactions?: TransactionRecord[];
   initialCards?: CreditCard[];
+  initialGoals?: SavingsGoal[];
 }
 
 export function NexoNovaApp({
   initialTransactions,
   initialCards,
+  initialGoals,
 }: NexoNovaAppProps = {}) {
   const [darkMode, setDarkMode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<WorkspaceTab>("OVERVIEW");
@@ -147,6 +188,9 @@ export function NexoNovaApp({
   );
   const [creditCards, setCreditCards] = React.useState<CreditCard[]>(
     initialCards && initialCards.length > 0 ? initialCards : INITIAL_DEMO_CARDS
+  );
+  const [savingsGoals, setSavingsGoals] = React.useState<SavingsGoal[]>(
+    initialGoals && initialGoals.length > 0 ? initialGoals : INITIAL_DEMO_GOALS
   );
   const [draftItems, setDraftItems] = React.useState<TransactionInput[] | null>(
     null
@@ -312,6 +356,7 @@ export function NexoNovaApp({
     { id: "OVERVIEW", label: "Início", icon: LayoutDashboard },
     { id: "TIMELINE", label: "Extrato", icon: ListOrdered },
     { id: "CARDS", label: "Cartões", icon: CreditCardIcon },
+    { id: "GOALS", label: "Metas", icon: Target },
     { id: "SCANNER", label: "Importar IA", icon: ScanLine },
     { id: "ENVELOPES", label: "Categorias", icon: PieChart },
   ];
@@ -428,6 +473,7 @@ export function NexoNovaApp({
                   {activeTab === "OVERVIEW" && "Minha Carteira"}
                   {activeTab === "TIMELINE" && "Extrato"}
                   {activeTab === "CARDS" && "Cartões de Crédito"}
+                  {activeTab === "GOALS" && "Metas & Objetivos"}
                   {activeTab === "SCANNER" && "Importar com IA"}
                   {activeTab === "ENVELOPES" && "Gastos por Categoria"}
                 </h1>
@@ -540,14 +586,26 @@ export function NexoNovaApp({
               <CreditCardManager cards={dynamicCreditCards} onCardsChange={setCreditCards} />
             )}
 
-            {/* ABA 4: IMPORTAR IA */}
+            {/* ABA 4: METAS FINANCEIRAS & COFRINHOS */}
+            {activeTab === "GOALS" && (
+              <SavingsGoalsManager
+                goals={savingsGoals}
+                onGoalsChange={setSavingsGoals}
+                monthlySavingsCapacity={Math.max(
+                  0,
+                  summary.totalIncome - summary.totalExpense
+                )}
+              />
+            )}
+
+            {/* ABA 5: IMPORTAR IA */}
             {activeTab === "SCANNER" && (
               <div className="mx-auto max-w-xl">
                 <QuickAiScanner onDraftExtracted={handleDraftExtracted} />
               </div>
             )}
 
-            {/* ABA 5: CATEGORIAS */}
+            {/* ABA 6: CATEGORIAS */}
             {activeTab === "ENVELOPES" && (
               <div className="space-y-5">
                 <CashFlowChart
