@@ -559,6 +559,7 @@ export function NexoNovaApp({
                   <div className="xl:col-span-7 flex flex-col">
                     <TimelineFeed
                       transactions={monthFilteredTransactions}
+                      creditCards={dynamicCreditCards}
                       onDeleteTransaction={handleDeleteTransaction}
                       onEditTransaction={handleEditTransaction}
                     />
@@ -576,6 +577,7 @@ export function NexoNovaApp({
             {activeTab === "TIMELINE" && (
               <TimelineFeed
                 transactions={monthFilteredTransactions}
+                creditCards={dynamicCreditCards}
                 onDeleteTransaction={handleDeleteTransaction}
                 onEditTransaction={handleEditTransaction}
               />
