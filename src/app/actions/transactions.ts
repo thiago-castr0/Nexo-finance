@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import {
   draftBatchApprovalSchema,
   transactionInputSchema,
@@ -11,6 +10,7 @@ import {
 } from "@/lib/schemas/transaction";
 import { extractTransactionsFromDocument } from "@/lib/ai/ocr-parser";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getAuthUserId } from "@/app/actions/auth";
 
 export interface ActionResponse<T> {
   success: boolean;
@@ -33,26 +33,8 @@ function isSupabaseConfigured(): boolean {
   );
 }
 
-async function getAuthUserId(): Promise<string | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("nexo_session")?.value;
-    if (!token) return null;
-    const cookieEmail = cookieStore.get("nexo_user_email")?.value || "";
-    if (cookieEmail.includes("castro.thiagoux") || cookieEmail.includes("thiago")) {
-      return "73a49bb2-9a0c-4850-8c46-2c3198fd0047";
-    }
-    const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) return null;
-    return data.user.id;
-  } catch {
-    return null;
-  }
-}
-
 /**
- * Server Action: Busca todas as transações persistidas no Supabase Cloud.
+ * Server Action: Busca todas as transações persistidas no Supabase Cloud para o usuário autenticado.
  */
 export async function fetchTransactionsAction(): Promise<ActionResponse<TransactionRecord[]>> {
   if (!isSupabaseConfigured()) {
@@ -61,16 +43,16 @@ export async function fetchTransactionsAction(): Promise<ActionResponse<Transact
 
   try {
     const userId = await getAuthUserId();
-    const supabase = createServerSupabaseClient();
+    if (!userId) {
+      return { success: true, data: [] };
+    }
 
-    let query = supabase
+    const supabase = createServerSupabaseClient();
+    const query = supabase
       .from("transactions")
       .select("*")
+      .eq("user_id", userId)
       .order("transaction_date", { ascending: false });
-
-    if (userId) {
-      query = query.eq("user_id", userId);
-    }
 
     const { data, error } = await query;
     if (error) {

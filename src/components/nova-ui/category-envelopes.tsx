@@ -24,15 +24,15 @@ export interface CategoryEnvelopesProps {
 }
 
 const DEFAULT_CATEGORY_BUDGETS: Record<string, number> = {
-  Moradia: 2800,
-  Alimentação: 1200,
-  "Assinaturas & Software": 350,
-  Transporte: 600,
-  "Saúde & Farmácia": 500,
-  "Lazer & Outros": 600,
+  Moradia: 0,
+  Alimentação: 0,
+  "Assinaturas & Software": 0,
+  Transporte: 0,
+  "Saúde & Farmácia": 0,
+  "Lazer & Outros": 0,
 };
 
-const STORAGE_KEY = "nexo_category_budgets_v1";
+const STORAGE_KEY = "nexo_category_budgets_v2_clean";
 
 export function CategoryEnvelopes({
   transactions,
@@ -149,9 +149,23 @@ export function CategoryEnvelopes({
       </div>
 
       {categoryBreakdown.length === 0 ? (
-        <p className="text-xs font-medium text-[#3F3F46] dark:text-[#D4D4D8] text-center py-6">
-          Nenhuma despesa registrada.
-        </p>
+        <div className="flex flex-col items-center justify-center p-6 text-center space-y-2 rounded-2xl border border-dashed border-[#D4D4D8] bg-[#F8FAFC]/50 dark:border-[#3F3F46] dark:bg-[#121216]/50">
+          <p className="text-xs font-bold text-[#18181B] dark:text-[#FFFFFF]">
+            Nenhum envelope configurado ainda
+          </p>
+          <p className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
+            Defina seus limites mensais por categoria para manter suas finanças sob controle.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="primary"
+            icon={SlidersHorizontal}
+            onClick={openBudgetEditor}
+          >
+            Configurar Tetos de Gastos
+          </Button>
+        </div>
       ) : (
         <div className="space-y-4">
           {categoryBreakdown.map((item) => {

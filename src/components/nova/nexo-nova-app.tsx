@@ -49,66 +49,6 @@ import type {
   TransactionRecord,
 } from "@/lib/schemas/transaction";
 
-const INITIAL_NOVA_TRANSACTIONS: TransactionRecord[] = [
-  {
-    id: "tx-nova-1",
-    description: "Salário Mensal",
-    amount: 9200.0,
-    type: "INCOME",
-    category: "Salário & Renda",
-    transactionDate: "2026-11-01",
-    status: "COMPLETED",
-    source: "MANUAL",
-    isRecurring: true,
-    createdAt: "2026-11-01T09:00:00.000Z",
-  },
-  {
-    id: "tx-nova-2",
-    description: "Aluguel & Condomínio",
-    amount: 2450.0,
-    type: "EXPENSE",
-    category: "Moradia",
-    transactionDate: "2026-11-02",
-    status: "COMPLETED",
-    source: "AI_OCR",
-    isRecurring: true,
-    createdAt: "2026-11-02T10:30:00.000Z",
-  },
-  {
-    id: "tx-nova-3",
-    description: "Supermercado Semanal",
-    amount: 684.5,
-    type: "EXPENSE",
-    category: "Alimentação",
-    transactionDate: "2026-11-03",
-    status: "COMPLETED",
-    source: "AI_OCR",
-    createdAt: "2026-11-03T11:15:00.000Z",
-  },
-  {
-    id: "tx-nova-4",
-    description: "Internet & Streaming",
-    amount: 169.9,
-    type: "EXPENSE",
-    category: "Assinaturas & Software",
-    transactionDate: "2026-11-03",
-    status: "COMPLETED",
-    source: "MANUAL",
-    createdAt: "2026-11-03T12:00:00.000Z",
-  },
-  {
-    id: "tx-nova-5",
-    description: "Combustível",
-    amount: 260.0,
-    type: "EXPENSE",
-    category: "Transporte",
-    transactionDate: "2026-11-04",
-    status: "COMPLETED",
-    source: "AI_OCR",
-    createdAt: "2026-11-04T08:40:00.000Z",
-  },
-];
-
 export type WorkspaceTab =
   | "OVERVIEW"
   | "TIMELINE"
@@ -116,61 +56,6 @@ export type WorkspaceTab =
   | "GOALS"
   | "SCANNER"
   | "ENVELOPES";
-
-const INITIAL_DEMO_GOALS: SavingsGoal[] = [
-  {
-    id: "goal-1",
-    name: "Reserva de Emergência (6 Meses)",
-    targetAmount: 30000,
-    currentAmount: 18500,
-    category: "Reserva de Emergência",
-    targetDate: "2027-06-30",
-    color: "#0CB853",
-  },
-  {
-    id: "goal-2",
-    name: "Férias no Japão",
-    targetAmount: 25000,
-    currentAmount: 8200,
-    category: "Viagem & Férias",
-    targetDate: "2027-10-15",
-    color: "#692296",
-  },
-  {
-    id: "goal-3",
-    name: "Troca do Notebook Profissional",
-    targetAmount: 12000,
-    currentAmount: 7500,
-    category: "Tecnologia",
-    targetDate: "2027-03-31",
-    color: "#DC2626",
-  },
-];
-
-const INITIAL_DEMO_CARDS: CreditCard[] = [
-  {
-    id: "card-1",
-    name: "Nubank Ultravioleta",
-    lastDigits: "8842",
-    brand: "Mastercard",
-    color: "#692296",
-    creditLimit: 12000,
-    currentInvoice: 2650.4,
-    closingDay: 18,
-    dueDay: 25,
-  },
-  {
-    id: "card-2",
-    name: "Itaú Personnalité Black",
-    lastDigits: "1093",
-    brand: "Visa",
-    color: "#DC2626",
-    creditLimit: 25000,
-    currentInvoice: 4120.0,
-    closingDay: 5,
-    dueDay: 12,
-  },
-];
 
 export interface NexoNovaAppProps {
   initialTransactions?: TransactionRecord[];
@@ -190,19 +75,17 @@ export function NexoNovaApp({
   const [darkMode, setDarkMode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<WorkspaceTab>("OVERVIEW");
   const [transactions, setTransactions] = React.useState<TransactionRecord[]>(
-    initialTransactions && initialTransactions.length > 0
-      ? initialTransactions
-      : INITIAL_NOVA_TRANSACTIONS
+    initialTransactions ?? []
   );
   const [creditCards, setCreditCards] = React.useState<CreditCard[]>(
-    initialCards && initialCards.length > 0 ? initialCards : INITIAL_DEMO_CARDS
+    initialCards ?? []
   );
   const [savingsGoals, setSavingsGoals] = React.useState<SavingsGoal[]>(
-    initialGoals && initialGoals.length > 0 ? initialGoals : INITIAL_DEMO_GOALS
+    initialGoals ?? []
   );
   const [categoryBudgets, setCategoryBudgets] = React.useState<
     Record<string, number> | undefined
-  >(initialBudgets);
+  >(initialBudgets ?? {});
   const [userProfile, setUserProfile] = React.useState<
     UserProfileData | undefined
   >(initialProfile);

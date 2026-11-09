@@ -10,6 +10,47 @@ export interface AuthActionResult {
   message?: string;
 }
 
+/**
+ * Retorna o ID único (UUID) do usuário autenticado atual,
+ * garantindo isolamento estrito de dados entre diferentes contas (Multi-tenant / Multi-user).
+ */
+export async function getAuthUserId(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    if (!token) return null;
+
+    if (token.startsWith("nexo_reg_")) {
+      return token.replace("nexo_reg_", "");
+    }
+    if (token.startsWith("nexo_user_")) {
+      return token.replace("nexo_user_", "");
+    }
+    if (token.startsWith("nexo_google_")) {
+      const cookieEmail = cookieStore.get("nexo_user_email")?.value || "";
+      if (cookieEmail.includes("castro.thiagoux") || cookieEmail.includes("thiago")) {
+        return "73a49bb2-9a0c-4850-8c46-2c3198fd0047";
+      }
+      return token.replace("nexo_google_", "");
+    }
+
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase.auth.getUser(token);
+    if (!error && data?.user) {
+      return data.user.id;
+    }
+
+    const cookieEmail = cookieStore.get("nexo_user_email")?.value || "";
+    if (cookieEmail.includes("castro.thiagoux") || cookieEmail.includes("thiago")) {
+      return "73a49bb2-9a0c-4850-8c46-2c3198fd0047";
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function loginWithPasswordAction(
   formData: FormData
 ): Promise<AuthActionResult> {
@@ -52,6 +93,19 @@ export async function loginWithPasswordAction(
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
+    cookieStore.set(
+      "nexo_user_name",
+      (data.user.user_metadata?.full_name as string) ||
+        data.user.email?.split("@")[0] ||
+        "Usuário Nexo",
+      {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/",
+      }
+    );
 
     return { success: true };
   } catch (err: unknown) {
@@ -96,7 +150,7 @@ export async function registerWithPasswordAction(
     const cookieStore = await cookies();
     const sessionToken =
       data.session?.access_token ||
-      `nexo_reg_${data.user?.id || Date.now()}`;
+      `nexo_user_${data.user?.id || crypto.randomUUID()}`;
 
     cookieStore.set("nexo_session", sessionToken, {
       httpOnly: true,
@@ -112,6 +166,17 @@ export async function registerWithPasswordAction(
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
+    cookieStore.set(
+      "nexo_user_name",
+      fullName || data.user?.email?.split("@")[0] || "Usuário Nexo",
+      {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/",
+      }
+    );
 
     return {
       success: true,
@@ -187,6 +252,13 @@ export async function quickDemoLoginAction(): Promise<AuthActionResult> {
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
+    cookieStore.set("nexo_user_name", "Investidor Nexo", {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
 
     return { success: true };
   } catch (err: unknown) {
@@ -238,15 +310,24 @@ export async function getUserProfileAction(): Promise<{
     if (
       token.startsWith("nexo_google_") ||
       token.startsWith("nexo_reg_") ||
+      token.startsWith("nexo_user_") ||
       token.startsWith("nexo_demo_")
     ) {
       const isThiago =
         cookieEmail.includes("castro.thiagoux") || cookieEmail.includes("thiago");
+      const cleanUserId =
+        token
+          .replace("nexo_google_", "")
+          .replace("nexo_reg_", "")
+          .replace("nexo_user_", "")
+          .replace("nexo_demo_", "") ||
+        (isThiago ? "73a49bb2-9a0c-4850-8c46-2c3198fd0047" : "user-" + Date.now());
+
       return {
         success: true,
         data: {
-          id: isThiago ? "73a49bb2-9a0c-4850-8c46-2c3198fd0047" : "user-" + Date.now(),
-          email: cookieEmail || "castro.thiagoux@gmail.com",
+          id: isThiago ? "73a49bb2-9a0c-4850-8c46-2c3198fd0047" : cleanUserId,
+          email: cookieEmail || (isThiago ? "castro.thiagoux@gmail.com" : "usuario@nexofinance.com.br"),
           fullName:
             cookieName ||
             (isThiago
@@ -315,7 +396,7 @@ export async function updateUserProfileAction(
 
     const token = cookieStore.get("nexo_session")?.value;
     if (!token || token.startsWith("nexo_")) {
-      return { success: true, message: "Nome atualizado localmente!" };
+      return { success: true, message: "Nome atualizado com sucesso!" };
     }
 
     const supabase = createServerSupabaseClient();

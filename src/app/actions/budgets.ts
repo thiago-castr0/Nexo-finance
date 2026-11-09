@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getAuthUserId } from "@/app/actions/auth";
 
 export interface BudgetActionResult<T = unknown> {
   success: boolean;
@@ -10,35 +10,20 @@ export interface BudgetActionResult<T = unknown> {
   error?: string;
 }
 
-async function getAuthUserId(): Promise<string | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("nexo_session")?.value;
-    if (!token) return null;
-    const cookieEmail = cookieStore.get("nexo_user_email")?.value || "";
-    if (cookieEmail.includes("castro.thiagoux") || cookieEmail.includes("thiago")) {
-      return "73a49bb2-9a0c-4850-8c46-2c3198fd0047";
-    }
-    const supabase = createServerSupabaseClient();
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) return null;
-    return data.user.id;
-  } catch {
-    return null;
-  }
-}
-
 export async function fetchCategoryBudgetsAction(): Promise<
   BudgetActionResult<Record<string, number>>
 > {
   try {
     const userId = await getAuthUserId();
-    const supabase = createServerSupabaseClient();
-
-    let query = supabase.from("category_budgets").select("category, monthly_limit");
-    if (userId) {
-      query = query.eq("user_id", userId);
+    if (!userId) {
+      return { success: true, data: {} };
     }
+
+    const supabase = createServerSupabaseClient();
+    const query = supabase
+      .from("category_budgets")
+      .select("category, monthly_limit")
+      .eq("user_id", userId);
 
     const { data, error } = await query;
     if (error) {

@@ -590,10 +590,14 @@ export function TimelineFeed({
       {filtered.length === 0 ? (
         <div className="mt-4 flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-[#D4D4D8] bg-[#F8FAFC] p-8 text-center dark:border-[#3F3F46] dark:bg-[#121216]">
           <p className="text-xs font-bold text-[#18181B] dark:text-[#F4F4F5]">
-            Nenhum lançamento encontrado para os filtros selecionados.
+            {transactions.length === 0
+              ? "Sua carteira está pronta! Nenhum lançamento cadastrado ainda."
+              : "Nenhum lançamento encontrado para os filtros selecionados."}
           </p>
           <p className="mt-1 text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
-            Tente ajustar os termos de busca ou remover alguns filtros aplicados.
+            {transactions.length === 0
+              ? "Cadastre seu salário, rendimentos ou despesas pelo botão '+ Novo Lançamento' no topo."
+              : "Tente ajustar os termos de busca ou remover alguns filtros aplicados."}
           </p>
           {activeFiltersCount > 0 && (
             <Button
