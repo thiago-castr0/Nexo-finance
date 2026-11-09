@@ -28,6 +28,7 @@ import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
 import { SavingsGoalsManager } from "@/components/nova-ui/savings-goals-manager";
 import { UserProfileModal } from "@/components/nova-ui/user-profile-modal";
+import { MobileBottomNav } from "@/components/nova-ui/mobile-bottom-nav";
 import { MonthSelector } from "@/components/nova-ui/month-selector";
 import { FinancialInsightsScore } from "@/components/nova-ui/financial-insights-score";
 import { CashFlowChart } from "@/components/nova-ui/cash-flow-chart";
@@ -108,7 +109,7 @@ const INITIAL_NOVA_TRANSACTIONS: TransactionRecord[] = [
   },
 ];
 
-type WorkspaceTab =
+export type WorkspaceTab =
   | "OVERVIEW"
   | "TIMELINE"
   | "CARDS"
@@ -491,24 +492,47 @@ export function NexoNovaApp({
           <header className="sticky top-0 z-30 border-b border-[#E4E4E7] bg-white/88 backdrop-blur-2xl dark:border-[#27272A] dark:bg-[#18181B]/90">
             <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
               <div className="flex items-center gap-2.5">
-                <div className="flex lg:hidden h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#DC2626] to-[#692296] text-white">
-                  <Flame className="h-4 w-4" strokeWidth={1.75} />
+                {/* Avatar Mobile Clicável com Iniciais do Usuário */}
+                <button
+                  type="button"
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="flex lg:hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#DC2626] to-[#692296] text-white shadow-xs font-bold text-xs cursor-pointer active:scale-95 transition"
+                  title="Abrir Meu Perfil"
+                  aria-label="Abrir Meu Perfil"
+                >
+                  {userProfile?.fullName ? (
+                    userProfile.fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()
+                  ) : (
+                    <Flame className="h-4 w-4" strokeWidth={1.75} />
+                  )}
+                </button>
+                <div>
+                  <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-[#18181B] dark:text-[#FFFFFF]">
+                    {activeTab === "OVERVIEW" && "Minha Carteira"}
+                    {activeTab === "TIMELINE" && "Extrato"}
+                    {activeTab === "CARDS" && "Cartões de Crédito"}
+                    {activeTab === "GOALS" && "Metas & Objetivos"}
+                    {activeTab === "SCANNER" && "Importar com IA"}
+                    {activeTab === "ENVELOPES" && "Gastos por Categoria"}
+                  </h1>
+                  {userProfile?.fullName && (
+                    <p className="lg:hidden text-[10px] font-medium text-[#71717A] dark:text-[#A1A1AA] -mt-0.5">
+                      Olá, {userProfile.fullName.split(" ")[0]}
+                    </p>
+                  )}
                 </div>
-                <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-[#18181B] dark:text-[#FFFFFF]">
-                  {activeTab === "OVERVIEW" && "Minha Carteira"}
-                  {activeTab === "TIMELINE" && "Extrato"}
-                  {activeTab === "CARDS" && "Cartões de Crédito"}
-                  {activeTab === "GOALS" && "Metas & Objetivos"}
-                  {activeTab === "SCANNER" && "Importar com IA"}
-                  {activeTab === "ENVELOPES" && "Gastos por Categoria"}
-                </h1>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <MonthSelector currentDate={selectedDate} onChange={setSelectedDate} />
                 <ThemeSwitch darkMode={darkMode} onToggle={setDarkMode} />
 
-                <Link href="/design-system" className="lg:hidden">
+                <Link href="/design-system" className="hidden sm:inline-flex lg:hidden">
                   <Button variant="secondary" size="sm" icon={Palette}>
                     Design
                   </Button>
@@ -522,8 +546,9 @@ export function NexoNovaApp({
                   onClick={() => setIsProfileModalOpen(true)}
                   title="Abrir meu perfil"
                   aria-label="Abrir meu perfil"
+                  className="hidden lg:inline-flex"
                 >
-                  <span className="hidden sm:inline">Perfil</span>
+                  Perfil
                 </Button>
 
                 <Button
@@ -531,6 +556,7 @@ export function NexoNovaApp({
                   variant="primary"
                   size="sm"
                   icon={Plus}
+                  className="hidden lg:inline-flex"
                   onClick={() => {
                     setEditingTransaction(null);
                     setIsManualModalOpen(true);
@@ -674,32 +700,18 @@ export function NexoNovaApp({
         </div>
 
         {/* ====================================================================
-            BARRA INFERIOR MOBILE EM VIDRO BRANCO
+            BARRA INFERIOR MOBILE 2.0 COM BOTÃO DE AÇÃO RÁPIDA (THUMB ZONE)
             ==================================================================== */}
-        <nav
-          aria-label="Navegação Mobile"
-          className="fixed bottom-0 inset-x-0 z-40 flex lg:hidden items-center justify-around border-t border-[#E4E4E7] bg-white/90 px-2 py-2 backdrop-blur-2xl dark:border-[#27272A] dark:bg-[#18181B]/95"
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={`flex min-h-[44px] flex-col items-center justify-center gap-1 rounded-xl px-3 py-1 text-[11px] font-bold transition whitespace-nowrap cursor-pointer ${
-                  isActive
-                    ? "text-[#DC2626] dark:text-[#E85950]"
-                    : "text-[#3F3F46] dark:text-[#D4D4D8]"
-                }`}
-              >
-                <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <MobileBottomNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onOpenManualEntry={() => {
+            setEditingTransaction(null);
+            setIsManualModalOpen(true);
+          }}
+          onOpenScanner={() => setActiveTab("SCANNER")}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+        />
       </div>
 
       <ManualEntryModal

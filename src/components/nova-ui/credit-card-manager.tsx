@@ -353,6 +353,7 @@ export function CreditCardManager({
                   </label>
                   <Input
                     type="text"
+                    inputMode="numeric"
                     maxLength={4}
                     placeholder="Ex: 4821"
                     value={lastDigits}
@@ -386,6 +387,7 @@ export function CreditCardManager({
                 </label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   step="100"
                   min="0"
                   placeholder="Ex: 5000"
@@ -402,6 +404,7 @@ export function CreditCardManager({
                   </label>
                   <Input
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     max="31"
                     value={closingDay}
@@ -416,6 +419,7 @@ export function CreditCardManager({
                   </label>
                   <Input
                     type="number"
+                    inputMode="numeric"
                     min="1"
                     max="31"
                     value={dueDay}

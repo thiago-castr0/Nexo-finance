@@ -462,6 +462,7 @@ export function SavingsGoalsManager({
                   </label>
                   <Input
                     type="number"
+                    inputMode="decimal"
                     step="50"
                     min="1"
                     placeholder="Ex: 15000"
@@ -477,6 +478,7 @@ export function SavingsGoalsManager({
                   </label>
                   <Input
                     type="number"
+                    inputMode="decimal"
                     step="50"
                     min="0"
                     placeholder="0"
@@ -564,6 +566,7 @@ export function SavingsGoalsManager({
                 </label>
                 <Input
                   type="number"
+                  inputMode="decimal"
                   step="10"
                   min="1"
                   placeholder="Ex: 250"
