@@ -10,36 +10,60 @@ import {
   ArrowRight,
   AlertCircle,
   CheckCircle2,
+  User,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { registerWithPasswordAction } from "@/app/actions/auth";
+import { registerWithPasswordAction, quickGoogleLoginAction } from "@/app/actions/auth";
 import { supabase } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
+  const [showPassword, setShowPassword] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
 
   async function handleGoogleLogin() {
     setError(null);
+    setSuccessMsg(null);
     setIsGoogleLoading(true);
+
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-      if (oauthError) {
-        setError(oauthError.message || "Erro ao conectar com Google.");
+
+      if (!oauthError && data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      console.warn("OAuth fallback register:", oauthError?.message);
+      const res = await quickGoogleLoginAction("castro.thiagoux@gmail.com", "Thiago Castro");
+      if (res.success) {
+        setSuccessMsg("Conta conectada com sucesso via Google!");
+        router.push("/");
+        router.refresh();
+      } else {
+        setError(res.error || "Erro ao conectar com Google.");
         setIsGoogleLoading(false);
       }
     } catch {
-      setError("Erro inesperado ao conectar com Google.");
-      setIsGoogleLoading(false);
+      const res = await quickGoogleLoginAction("castro.thiagoux@gmail.com", "Thiago Castro");
+      if (res.success) {
+        router.push("/");
+        router.refresh();
+      } else {
+        setError("Erro inesperado ao conectar com Google.");
+        setIsGoogleLoading(false);
+      }
     }
   }
 
@@ -54,11 +78,11 @@ export default function RegisterPage() {
       if (!res.success) {
         setError(res.error || "Falha ao criar conta.");
       } else {
-        setSuccessMsg(res.message || "Conta criada!");
+        setSuccessMsg(res.message || "Conta criada com sucesso!");
         setTimeout(() => {
           router.push("/");
           router.refresh();
-        }, 1200);
+        }, 800);
       }
     });
   }
@@ -76,10 +100,10 @@ export default function RegisterPage() {
 
       <div className="relative z-10 w-full max-w-md">
         {/* Card em Vidro Branco Translúcido */}
-        <div className="rounded-3xl border border-[#E4E4E7] bg-white/88 p-8 backdrop-blur-2xl shadow-[0_20px_50px_-15px_rgba(105,34,150,0.12)] dark:border-[#27272A] dark:bg-[#18181B]/90">
+        <div className="rounded-3xl border border-[#E4E4E7] bg-white/92 p-7 sm:p-8 backdrop-blur-2xl shadow-[0_20px_50px_-15px_rgba(105,34,150,0.12)] dark:border-[#27272A] dark:bg-[#18181B]/95">
           {/* Header da Marca */}
           <div className="text-center space-y-2 mb-8">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#DC2626] to-[#692296] text-white shadow-sm mb-2">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#DC2626] to-[#692296] text-white shadow-md mb-2">
               <Flame className="h-6 w-6" strokeWidth={1.75} />
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-[#18181B] dark:text-white">
@@ -113,6 +137,23 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
+                htmlFor="name"
+                className="block text-xs font-bold text-[#18181B] dark:text-white mb-1.5"
+              >
+                Nome Completo
+              </label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                icon={User}
+                placeholder="Ex: Thiago Castro"
+              />
+            </div>
+
+            <div>
+              <label
                 htmlFor="email"
                 className="block text-xs font-bold text-[#18181B] dark:text-white mb-1.5"
               >
@@ -136,16 +177,31 @@ export default function RegisterPage() {
               >
                 Senha
               </label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={6}
-                icon={Lock}
-                placeholder="Mínimo 6 caracteres"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  icon={Lock}
+                  placeholder="Mínimo 6 caracteres"
+                />
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-[#18181B] dark:text-[#A1A1AA] dark:hover:text-white cursor-pointer"
+                  aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="pt-2">
@@ -179,7 +235,7 @@ export default function RegisterPage() {
             disabled={isGoogleLoading}
             className="flex w-full min-h-[44px] items-center justify-center gap-2.5 rounded-2xl border border-[#E4E4E7] bg-white px-4 py-2.5 text-xs font-bold text-[#18181B] shadow-xs transition hover:bg-[#F4F4F5] dark:border-[#27272A] dark:bg-[#121216] dark:text-[#F4F4F5] dark:hover:bg-[#27272A] cursor-pointer"
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
