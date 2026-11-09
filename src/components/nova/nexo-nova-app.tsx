@@ -14,6 +14,7 @@ import {
   Plus,
   ScanLine,
   Target,
+  User,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,12 +27,13 @@ import { CategoryDonutChart } from "@/components/nova-ui/category-donut-chart";
 import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
 import { SavingsGoalsManager } from "@/components/nova-ui/savings-goals-manager";
+import { UserProfileModal } from "@/components/nova-ui/user-profile-modal";
 import { MonthSelector } from "@/components/nova-ui/month-selector";
 import { FinancialInsightsScore } from "@/components/nova-ui/financial-insights-score";
 import { CashFlowChart } from "@/components/nova-ui/cash-flow-chart";
 import { DraftReviewPanel } from "@/components/dashboard/draft-review-panel";
 import { ManualEntryModal } from "@/components/dashboard/manual-entry-modal";
-import { logoutAction } from "@/app/actions/auth";
+import { logoutAction, type UserProfileData } from "@/app/actions/auth";
 import type { CreditCard } from "@/lib/schemas/credit-card";
 import type { SavingsGoal } from "@/lib/schemas/savings-goal";
 import {
@@ -174,6 +176,7 @@ export interface NexoNovaAppProps {
   initialCards?: CreditCard[];
   initialGoals?: SavingsGoal[];
   initialBudgets?: Record<string, number>;
+  initialProfile?: UserProfileData;
 }
 
 export function NexoNovaApp({
@@ -181,6 +184,7 @@ export function NexoNovaApp({
   initialCards,
   initialGoals,
   initialBudgets,
+  initialProfile,
 }: NexoNovaAppProps = {}) {
   const [darkMode, setDarkMode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<WorkspaceTab>("OVERVIEW");
@@ -198,6 +202,10 @@ export function NexoNovaApp({
   const [categoryBudgets, setCategoryBudgets] = React.useState<
     Record<string, number> | undefined
   >(initialBudgets);
+  const [userProfile, setUserProfile] = React.useState<
+    UserProfileData | undefined
+  >(initialProfile);
+  const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
   const [draftItems, setDraftItems] = React.useState<TransactionInput[] | null>(
     null
   );
@@ -437,8 +445,19 @@ export function NexoNovaApp({
             </nav>
           </div>
 
-          {/* Rodapé da Sidebar: Design System & Logout */}
+          {/* Rodapé da Sidebar: Meu Perfil, Design System & Logout */}
           <div className="space-y-2 border-t border-[#E4E4E7] pt-4 dark:border-[#27272A]">
+            <Button
+              type="button"
+              variant="neutral"
+              size="sm"
+              icon={User}
+              onClick={() => setIsProfileModalOpen(true)}
+              className="w-full justify-start text-[#18181B] dark:text-[#E4E4E7]"
+            >
+              Meu Perfil
+            </Button>
+
             <Link href="/design-system" className="block">
               <Button
                 variant="secondary"
@@ -494,6 +513,18 @@ export function NexoNovaApp({
                     Design
                   </Button>
                 </Link>
+
+                <Button
+                  type="button"
+                  variant="neutral"
+                  size="sm"
+                  icon={User}
+                  onClick={() => setIsProfileModalOpen(true)}
+                  title="Abrir meu perfil"
+                  aria-label="Abrir meu perfil"
+                >
+                  <span className="hidden sm:inline">Perfil</span>
+                </Button>
 
                 <Button
                   type="button"
@@ -682,6 +713,13 @@ export function NexoNovaApp({
           setEditingTransaction(null);
         }}
         onSubmit={handleManualSubmit}
+      />
+
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        initialProfile={userProfile}
+        onProfileUpdate={setUserProfile}
       />
     </div>
   );

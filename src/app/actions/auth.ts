@@ -124,3 +124,136 @@ export async function logoutAction(): Promise<void> {
   cookieStore.delete("nexo_user_email");
   redirect("/login");
 }
+
+export interface UserProfileData {
+  id: string;
+  email: string;
+  fullName: string;
+  createdAt: string;
+}
+
+export async function getUserProfileAction(): Promise<{
+  success: boolean;
+  data?: UserProfileData;
+  error?: string;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    const cookieEmail = cookieStore.get("nexo_user_email")?.value || "";
+
+    if (!token) {
+      return {
+        success: true,
+        data: {
+          id: "demo-user",
+          email: cookieEmail || "demo@nexofinance.com.br",
+          fullName: "Investidor Nexo",
+          createdAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data.user) {
+      return {
+        success: true,
+        data: {
+          id: "demo-user",
+          email: cookieEmail || "demo@nexofinance.com.br",
+          fullName: "Investidor Nexo",
+          createdAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        id: data.user.id,
+        email: data.user.email || cookieEmail,
+        fullName:
+          (data.user.user_metadata?.full_name as string) ||
+          data.user.email?.split("@")[0] ||
+          "Investidor Nexo",
+        createdAt: data.user.created_at,
+      },
+    };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error:
+        err instanceof Error ? err.message : "Erro ao carregar perfil do usuário.",
+    };
+  }
+}
+
+export async function updateUserProfileAction(
+  fullName: string
+): Promise<AuthActionResult> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    if (!token) {
+      return { success: true, message: "Nome atualizado localmente!" };
+    }
+
+    const supabase = createServerSupabaseClient();
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: fullName.trim() },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: "Perfil atualizado com sucesso!" };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error:
+        err instanceof Error ? err.message : "Erro ao atualizar dados do perfil.",
+    };
+  }
+}
+
+export async function updatePasswordAction(
+  newPassword: string
+): Promise<AuthActionResult> {
+  if (!newPassword || newPassword.length < 6) {
+    return {
+      success: false,
+      error: "A nova senha deve ter pelo menos 6 caracteres.",
+    };
+  }
+
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    if (!token) {
+      return {
+        success: false,
+        error: "Faça login com uma conta real para alterar a senha.",
+      };
+    }
+
+    const supabase = createServerSupabaseClient();
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: "Senha alterada com sucesso!" };
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error:
+        err instanceof Error ? err.message : "Erro ao atualizar a senha.",
+    };
+  }
+}
