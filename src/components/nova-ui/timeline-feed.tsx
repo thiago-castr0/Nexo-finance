@@ -14,6 +14,7 @@ import {
   Home,
   LayoutList,
   Pencil,
+  Receipt,
   RotateCcw,
   Search,
   ShoppingBag,
@@ -31,6 +32,7 @@ import { exportTransactionsToCSV } from "@/lib/export-csv";
 import { CATEGORIES } from "@/lib/schemas/transaction";
 import type { TransactionRecord } from "@/lib/schemas/transaction";
 import type { CreditCard } from "@/lib/schemas/credit-card";
+import { ReceiptPreviewModal } from "@/components/nova-ui/receipt-preview-modal";
 
 function formatDateBR(isoDate: string): string {
   const [year, month, day] = isoDate.split("-");
@@ -91,6 +93,8 @@ export function TimelineFeed({
   const [selectedSpecial, setSelectedSpecial] = React.useState<SpecialFilter>("ALL");
   const [sortBy, setSortBy] = React.useState<SortOption>("DATE_DESC");
   const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const [viewingReceiptTx, setViewingReceiptTx] =
+    React.useState<TransactionRecord | null>(null);
 
   // Lista dinâmica e única de categorias
   const availableCategories = React.useMemo(() => {
@@ -681,6 +685,16 @@ export function TimelineFeed({
                   </span>
 
                   <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setViewingReceiptTx(tx)}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-[#71717A] transition hover:bg-[#BCD6F2]/40 hover:text-[#2572CE] dark:text-[#A1A1AA] dark:hover:bg-[#2572CE]/20 dark:hover:text-[#BCD6F2] cursor-pointer"
+                      title="Ver comprovante / cupom digital"
+                      aria-label={`Ver comprovante de ${tx.description}`}
+                    >
+                      <Receipt className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
+
                     {onEditTransaction && (
                       <button
                         type="button"
@@ -709,6 +723,13 @@ export function TimelineFeed({
           })}
         </div>
       )}
+
+      {/* Modal de Visualização de Comprovante / Cupom Digital */}
+      <ReceiptPreviewModal
+        transaction={viewingReceiptTx}
+        isOpen={Boolean(viewingReceiptTx)}
+        onClose={() => setViewingReceiptTx(null)}
+      />
     </div>
   );
 }

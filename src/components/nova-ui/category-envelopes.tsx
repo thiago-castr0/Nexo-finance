@@ -12,10 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrencyBRL } from "@/lib/finance";
+import { saveCategoryBudgetsAction } from "@/app/actions/budgets";
 import type { TransactionRecord } from "@/lib/schemas/transaction";
 
 export interface CategoryEnvelopesProps {
   transactions: TransactionRecord[];
+  initialBudgets?: Record<string, number>;
+  onBudgetsChange?: (budgets: Record<string, number>) => void;
   totalIncome?: number;
   totalExpenses?: number;
 }
@@ -33,8 +36,13 @@ const STORAGE_KEY = "nexo_category_budgets_v1";
 
 export function CategoryEnvelopes({
   transactions,
+  initialBudgets,
+  onBudgetsChange,
 }: CategoryEnvelopesProps) {
   const [budgets, setBudgets] = React.useState<Record<string, number>>(() => {
+    if (initialBudgets && Object.keys(initialBudgets).length > 0) {
+      return { ...DEFAULT_CATEGORY_BUDGETS, ...initialBudgets };
+    }
     if (typeof window === "undefined") return DEFAULT_CATEGORY_BUDGETS;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -48,6 +56,7 @@ export function CategoryEnvelopes({
   });
   const [isEditingBudgets, setIsEditingBudgets] = React.useState(false);
   const [draftBudgets, setDraftBudgets] = React.useState<Record<string, number>>(budgets);
+  const [isSaving, startSavingTransition] = React.useTransition();
 
   const openBudgetEditor = () => {
     setDraftBudgets({ ...budgets });
@@ -55,13 +64,19 @@ export function CategoryEnvelopes({
   };
 
   const saveBudgetEditor = () => {
-    setBudgets(draftBudgets);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(draftBudgets));
-    } catch {
-      // Fallback
-    }
-    setIsEditingBudgets(false);
+    startSavingTransition(async () => {
+      setBudgets(draftBudgets);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(draftBudgets));
+      } catch {
+        // Fallback
+      }
+      await saveCategoryBudgetsAction(draftBudgets);
+      if (onBudgetsChange) {
+        onBudgetsChange(draftBudgets);
+      }
+      setIsEditingBudgets(false);
+    });
   };
 
   const resetToDefaults = () => {
@@ -285,9 +300,10 @@ export function CategoryEnvelopes({
                   size="sm"
                   variant="primary"
                   icon={CheckCircle2}
+                  disabled={isSaving}
                   onClick={saveBudgetEditor}
                 >
-                  Salvar Metas
+                  {isSaving ? "Salvando..." : "Salvar Metas"}
                 </Button>
               </div>
             </div>

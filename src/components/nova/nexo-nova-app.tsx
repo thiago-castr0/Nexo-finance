@@ -22,6 +22,7 @@ import { NotificationBanner } from "@/components/ui/toast-banner";
 import { WalletHeroCard } from "@/components/nova-ui/wallet-hero-card";
 import { TimelineFeed } from "@/components/nova-ui/timeline-feed";
 import { CategoryEnvelopes } from "@/components/nova-ui/category-envelopes";
+import { CategoryDonutChart } from "@/components/nova-ui/category-donut-chart";
 import { QuickAiScanner } from "@/components/nova-ui/quick-ai-scanner";
 import { CreditCardManager } from "@/components/nova-ui/credit-card-manager";
 import { SavingsGoalsManager } from "@/components/nova-ui/savings-goals-manager";
@@ -172,12 +173,14 @@ export interface NexoNovaAppProps {
   initialTransactions?: TransactionRecord[];
   initialCards?: CreditCard[];
   initialGoals?: SavingsGoal[];
+  initialBudgets?: Record<string, number>;
 }
 
 export function NexoNovaApp({
   initialTransactions,
   initialCards,
   initialGoals,
+  initialBudgets,
 }: NexoNovaAppProps = {}) {
   const [darkMode, setDarkMode] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<WorkspaceTab>("OVERVIEW");
@@ -192,6 +195,9 @@ export function NexoNovaApp({
   const [savingsGoals, setSavingsGoals] = React.useState<SavingsGoal[]>(
     initialGoals && initialGoals.length > 0 ? initialGoals : INITIAL_DEMO_GOALS
   );
+  const [categoryBudgets, setCategoryBudgets] = React.useState<
+    Record<string, number> | undefined
+  >(initialBudgets);
   const [draftItems, setDraftItems] = React.useState<TransactionInput[] | null>(
     null
   );
@@ -567,7 +573,11 @@ export function NexoNovaApp({
 
                   <div className="xl:col-span-5 flex flex-col gap-5">
                     <QuickAiScanner onDraftExtracted={handleDraftExtracted} />
-                    <CategoryEnvelopes transactions={monthFilteredTransactions} />
+                    <CategoryEnvelopes
+                      transactions={monthFilteredTransactions}
+                      initialBudgets={categoryBudgets}
+                      onBudgetsChange={setCategoryBudgets}
+                    />
                   </div>
                 </div>
               </>
@@ -610,12 +620,17 @@ export function NexoNovaApp({
             {/* ABA 6: CATEGORIAS */}
             {activeTab === "ENVELOPES" && (
               <div className="space-y-5">
+                <CategoryDonutChart transactions={monthFilteredTransactions} />
+                <CategoryEnvelopes
+                  transactions={monthFilteredTransactions}
+                  initialBudgets={categoryBudgets}
+                  onBudgetsChange={setCategoryBudgets}
+                />
                 <CashFlowChart
                   transactions={monthFilteredTransactions}
                   allTransactions={transactions}
                   selectedDate={selectedDate}
                 />
-                <CategoryEnvelopes transactions={monthFilteredTransactions} />
                 <FinancialInsightsScore
                   transactions={monthFilteredTransactions}
                   totalIncome={summary.totalIncome}
